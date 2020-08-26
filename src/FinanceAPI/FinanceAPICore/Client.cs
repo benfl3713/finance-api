@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,6 +26,17 @@ namespace FinanceAPICore
             FirstName = firstname;
             LastName = lastname;
             Username = username;
+        }
+
+        public static Client CreateFromJson(JObject jClient)
+		{
+            Client client = new Client();
+            client.ID = jClient["ID"]?.ToString();
+            client.FirstName = jClient["FirstName"]?.ToString();
+            client.LastName = jClient["LastName"]?.ToString();
+            client.Username = jClient["Username"]?.ToString();
+
+            return client;
         }
     }
 }

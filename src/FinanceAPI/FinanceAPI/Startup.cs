@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceAPIData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -25,7 +26,9 @@ namespace FinanceAPI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddControllers().AddNewtonsoftJson();
+			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
+
+			AddProcessors(services);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,6 +49,12 @@ namespace FinanceAPI
 			{
 				endpoints.MapControllers();
 			});
+		}
+
+		private void AddProcessors(IServiceCollection services)
+		{
+			services.AddTransient<ClientProcessor>();
+			services.AddTransient<AccountProcessor>();
 		}
 	}
 }

@@ -17,13 +17,13 @@ namespace FinanceAPICore
         public string Vendor;
         public string Merchant;
         public string Type;
-        public string Notes;
+        public string Note;
         public string Logo;
 
         public Transaction()
         {
         }
-        public Transaction(string id,DateTime date,string accountID,string accountName, string category, decimal amount, string vendor,string merchant="", string type = "", string notes = "", string logo = "")
+        public Transaction(string id,DateTime date,string accountID,string accountName, string category, decimal amount, string vendor,string merchant="", string type = "", string note = "", string logo = "")
         {
             ID = id;
             Date = date;
@@ -34,12 +34,12 @@ namespace FinanceAPICore
             Vendor = vendor;
             Merchant = merchant;
             Type = type;
-            Notes = notes;
+            Note = note;
             Logo = logo;
             CalculateLogo();
         }
 
-        public Transaction(string id, DateTime date, string accountID, string category, decimal amount, string vendor, string merchant = "", string type = "", string notes = "", string logo = "")
+        public Transaction(string id, DateTime date, string accountID, string category, decimal amount, string vendor, string merchant = "", string type = "", string note = "", string logo = "")
         {
             ID = id;
             Date = date;
@@ -49,7 +49,7 @@ namespace FinanceAPICore
             Vendor = vendor;
             Merchant = merchant;
             Type = type;
-            Notes = notes;
+            Note = note;
             Logo = logo;
             CalculateLogo();
         }

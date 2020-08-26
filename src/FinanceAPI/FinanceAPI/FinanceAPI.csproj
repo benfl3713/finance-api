@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FinanceAPICore\FinanceAPICore.csproj" />
+    <ProjectReference Include="..\FinanceAPIData\FinanceAPIData.csproj" />
   </ItemGroup>
 
 
