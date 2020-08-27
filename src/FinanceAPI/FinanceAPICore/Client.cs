@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace FinanceAPICore
         public string FirstName;
         public string LastName;
         public string Username;
+        [JsonIgnore]
+        public string Password;
         public Client() { }
         public Client(string id, string firstname, string lastname, string username)
         {

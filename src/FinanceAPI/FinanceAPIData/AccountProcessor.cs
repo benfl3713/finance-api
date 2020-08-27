@@ -34,5 +34,13 @@ namespace FinanceAPIData
 				return _accountDataService.DeleteAccount(accountId);
 			return false;
 		}
+
+		public List<Account> GetAccounts(string clientId)
+		{
+			if (string.IsNullOrEmpty(clientId))
+				return null;
+
+			return _accountDataService.GetAccounts(clientId);
+		}
 	}
 }

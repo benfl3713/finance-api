@@ -51,5 +51,12 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			throw new NotImplementedException();
 		}
+
+		public List<Account> GetAccounts(string clientId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			var filter = Builders<Account>.Filter.Eq("ClientID", clientId);
+			return database.LoadRecordsByFilter(tableName, filter);
+		}
 	}
 }

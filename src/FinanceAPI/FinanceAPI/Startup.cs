@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceAPI.Middleware;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +28,7 @@ namespace FinanceAPI
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
-
+			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 			AddProcessors(services);
 		}
 
@@ -49,12 +50,16 @@ namespace FinanceAPI
 			{
 				endpoints.MapControllers();
 			});
+
+			app.UseMiddleware<JwtMiddleware>();
 		}
 
 		private void AddProcessors(IServiceCollection services)
 		{
 			services.AddTransient<ClientProcessor>();
 			services.AddTransient<AccountProcessor>();
+			services.AddTransient<TransactionProcessor>();
+			services.AddTransient<AuthenticationProcessor>();
 		}
 	}
 }

@@ -9,7 +9,7 @@ namespace FinanceAPIMongoDataService
 	internal class MongoDatabase
 	{
 		private IMongoDatabase db;
-		public MongoDatabase(string database)
+		public MongoDatabase(string database, string connectionString = "mongodb://bendrive")
 		{
 			var client = new MongoClient(connectionString);
 			db = client.GetDatabase(database);
@@ -37,6 +37,20 @@ namespace FinanceAPIMongoDataService
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq("ID", id);
 				return collection.Find(filter).First();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return default;
+			}
+		}
+
+		public List<T> LoadRecordsByFilter<T>(string table, FilterDefinition<T> filter)
+		{
+			try
+			{
+				var collection = db.GetCollection<T>(table);
+				return collection.Find(filter).ToList();
 			}
 			catch (Exception ex)
 			{

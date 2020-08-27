@@ -1,7 +1,9 @@
 ﻿using FinanceAPICore;
 using FinanceAPICore.DataService;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FinanceAPIMongoDataService.DataService
@@ -33,6 +35,17 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			return database.DeleteRecord<Client>(tableName, clientId);
+		}
+
+		public Client LoginClient(string username, string hashedPassword)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			var filter = Builders<Client>.Filter.Eq("Username", username) & Builders<Client>.Filter.Eq("Password", hashedPassword);
+			List<Client> records = database.LoadRecordsByFilter(tableName, filter);
+			if (records.Any())
+				return records.First();
+
+			return null;
 		}
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,11 +11,13 @@ namespace FinanceAPICore
     {
         [BsonId]
         public string ID;
+        [JsonIgnore]
+        public string ClientID;
         public DateTime Date;
         public string AccountID;
-        public string AccountName;
         public string Category;
         public decimal Amount;
+        public string Currency;
         public string Vendor;
         public string Merchant;
         public string Type;
@@ -23,23 +27,7 @@ namespace FinanceAPICore
         public Transaction()
         {
         }
-        public Transaction(string id,DateTime date,string accountID,string accountName, string category, decimal amount, string vendor,string merchant="", string type = "", string note = "", string logo = "")
-        {
-            ID = id;
-            Date = date;
-            AccountID = accountID;
-            AccountName = accountName;
-            Category = category;
-            Amount = amount;
-            Vendor = vendor;
-            Merchant = merchant;
-            Type = type;
-            Note = note;
-            Logo = logo;
-            CalculateLogo();
-        }
-
-        public Transaction(string id, DateTime date, string accountID, string category, decimal amount, string vendor, string merchant = "", string type = "", string note = "", string logo = "")
+        public Transaction(string id,DateTime date,string accountID, string category, decimal amount, string vendor,string merchant="", string type = "", string note = "", string logo = "")
         {
             ID = id;
             Date = date;
@@ -63,6 +51,23 @@ namespace FinanceAPICore
                 else if (!string.IsNullOrEmpty(Merchant))
                     Logo = $"https://logo.clearbit.com/{Merchant.Replace("'", "").Replace(" ", "").Replace(",", "")}.com";
             }
+        }
+
+        public static Transaction CreateFromJson(JObject jTransaction, string clientId)
+        {
+            Transaction transaction = new Transaction();
+            transaction.ID = jTransaction["ID"]?.ToString();
+            transaction.Date = DateTime.Parse(jTransaction["Date"]?.ToString());
+            transaction.AccountID = jTransaction["AccountID"]?.ToString();
+            transaction.Category = jTransaction["Category"]?.ToString();
+            transaction.Amount = decimal.Parse(jTransaction["Amount"]?.ToString());
+            transaction.Currency = jTransaction["Currency"]?.ToString();
+            transaction.Vendor = jTransaction["Vendor"]?.ToString();
+            transaction.Merchant = jTransaction["Merchant"]?.ToString();
+            transaction.Type = jTransaction["Type"]?.ToString();
+            transaction.Note = jTransaction["Note"]?.ToString();
+            transaction.ClientID = clientId;
+            return transaction;
         }
     }
 }

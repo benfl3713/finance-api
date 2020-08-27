@@ -21,9 +21,9 @@ namespace FinanceAPI.Controllers
 			_accountProcessor = accountProcessor;
 		}
 		[HttpPost]
-		public IActionResult InsertAccount([FromBody] JObject jsonAccount)
+		public IActionResult InsertAccount([FromBody] JObject jsonAccount, [FromRoute(Name = "clientId")] string clientId)
 		{
-			Account account = Account.CreateFromJson(jsonAccount);
+			Account account = Account.CreateFromJson(jsonAccount, clientId);
 			string accountId = _accountProcessor.InsertAccount(account);
 			if (accountId != null)
 				return Ok(accountId);
@@ -31,9 +31,9 @@ namespace FinanceAPI.Controllers
 		}
 
 		[HttpPut]
-		public IActionResult UpdateAccount([FromBody] JObject jsonAccount)
+		public IActionResult UpdateAccount([FromBody] JObject jsonAccount, [FromRoute(Name = "clientId")] string clientId)
 		{
-			Account account = Account.CreateFromJson(jsonAccount);
+			Account account = Account.CreateFromJson(jsonAccount, clientId);
 			if (string.IsNullOrEmpty(account.ID))
 				return BadRequest("Account ID is required");
 

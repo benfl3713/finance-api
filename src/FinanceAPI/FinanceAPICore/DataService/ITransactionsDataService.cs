@@ -6,10 +6,10 @@ namespace FinanceAPICore.DataService
 {
 	public interface ITransactionsDataService
 	{
+		bool InsertTransaction(Transaction transaction);
+		Transaction GetTransactionById(string transactionId);
+		bool UpdateTransaction(Transaction transaction);
+		bool DeleteTransaction(string transactionId);
 		List<Transaction> GetTransactions(string clientId);
-		Transaction GetTransactionById(string clientId, string transactionId);
-		bool InsertTransaction(string clientId, Transaction transaction);
-		bool UpdateTransaction(string clientId, Transaction transaction);
-		bool DeleteTransaction(string clientId, string transactionId);
 	}
 }

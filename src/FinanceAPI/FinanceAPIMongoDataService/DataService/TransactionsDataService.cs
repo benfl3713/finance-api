@@ -3,34 +3,44 @@ using System.Collections.Generic;
 using System.Text;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
+using MongoDB.Driver;
 
 namespace FinanceAPIMongoDataService.DataService
 {
 	public class TransactionsDataService : ITransactionsDataService
 	{
-		public Transaction GetTransactionById(string clientId, string transactionId)
+		string databaseName = "finance";
+		string tableName = "transactions";
+
+		public bool DeleteTransaction(string transactionId)
 		{
-			throw new NotImplementedException();
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.DeleteRecord<Transaction>(tableName, transactionId);
+		}
+
+		public Transaction GetTransactionById(string transactionId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.LoadRecordById<Transaction>(tableName, transactionId);
 		}
 
 		public List<Transaction> GetTransactions(string clientId)
 		{
-			throw new NotImplementedException();
+			MongoDatabase database = new MongoDatabase(databaseName);
+			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
+			return database.LoadRecordsByFilter(tableName, filter);
 		}
 
-		public bool InsertTransaction(string clientId, Transaction transaction)
+		public bool InsertTransaction(Transaction transaction)
 		{
-			throw new NotImplementedException();
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.InsertRecord(tableName, transaction);
 		}
 
-		public bool UpdateTransaction(string clientId, Transaction transaction)
+		public bool UpdateTransaction(Transaction transaction)
 		{
-			throw new NotImplementedException();
-		}
-
-		public bool DeleteTransaction(string clientId, string transactionId)
-		{
-			throw new NotImplementedException();
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.UpdateRecord(tableName, transaction, transaction.ID);
 		}
 	}
 }
