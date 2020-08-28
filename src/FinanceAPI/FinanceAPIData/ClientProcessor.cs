@@ -11,6 +11,7 @@ namespace FinanceAPIData
 		{
 			// Force client id to be empty
 			client.ID = Guid.NewGuid().ToString();
+			client.Password = FinanceAPICore.Utilities.PasswordHasher.Hash(client.Password);
 			return _clientDataService.InsertClient(client) ? client.ID : null;
 		}
 
@@ -23,6 +24,7 @@ namespace FinanceAPIData
 
 		public bool UpdateClient(Client client)
 		{
+			client.Password = FinanceAPICore.Utilities.PasswordHasher.Hash(client.Password);
 			return _clientDataService.UpdateClient(client);
 		}
 

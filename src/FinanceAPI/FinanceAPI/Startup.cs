@@ -40,18 +40,22 @@ namespace FinanceAPI
 				app.UseDeveloperExceptionPage();
 			}
 
+			// global cors policy
+			app.UseCors(x => x
+				.AllowAnyOrigin()
+				.AllowAnyMethod()
+				.AllowAnyHeader());
+
+			app.UseMiddleware<JwtMiddleware>();
+
 			app.UseHttpsRedirection();
 
 			app.UseRouting();
-
-			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapControllers();
 			});
-
-			app.UseMiddleware<JwtMiddleware>();
 		}
 
 		private void AddProcessors(IServiceCollection services)

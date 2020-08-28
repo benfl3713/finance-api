@@ -37,10 +37,10 @@ namespace FinanceAPIMongoDataService.DataService
 			return database.DeleteRecord<Client>(tableName, clientId);
 		}
 
-		public Client LoginClient(string username, string hashedPassword)
+		public Client GetClientByUsername(string username)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			var filter = Builders<Client>.Filter.Eq("Username", username) & Builders<Client>.Filter.Eq("Password", hashedPassword);
+			var filter = Builders<Client>.Filter.Eq("Username", username);
 			List<Client> records = database.LoadRecordsByFilter(tableName, filter);
 			if (records.Any())
 				return records.First();

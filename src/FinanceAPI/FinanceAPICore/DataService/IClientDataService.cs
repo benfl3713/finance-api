@@ -10,6 +10,6 @@ namespace FinanceAPICore.DataService
 		Client GetClientById(string clientId);
 		bool UpdateClient(Client client);
 		bool DeleteClient(string clientId);
-		Client LoginClient(string username, string hashedPassword);
+		Client GetClientByUsername(string username);
 	}
 }

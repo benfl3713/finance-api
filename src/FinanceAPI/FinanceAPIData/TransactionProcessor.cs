@@ -13,25 +13,29 @@ namespace FinanceAPIData
 		{
 			// Force transaction id to be empty
 			transaction.ID = Guid.NewGuid().ToString();
+			if (string.IsNullOrEmpty(transaction.ClientID))
+				return null;
 			return _transactionDataService.InsertTransaction(transaction) ? transaction.ID : null;
 		}
 
-		public Transaction GetTransactionById(string transactionId)
+		public Transaction GetTransactionById(string transactionId, string clientId)
 		{
 			if (string.IsNullOrEmpty(transactionId))
 				return null;
-			return _transactionDataService.GetTransactionById(transactionId);
+			return _transactionDataService.GetTransactionById(transactionId, clientId);
 		}
 
 		public bool UpdateTransaction(Transaction transaction)
 		{
+			if (string.IsNullOrEmpty(transaction.ClientID))
+				return false;
 			return _transactionDataService.UpdateTransaction(transaction);
 		}
 
-		public bool DeleteTransaction(string transactionId)
+		public bool DeleteTransaction(string transactionId, string clientId)
 		{
 			if (!string.IsNullOrEmpty(transactionId))
-				return _transactionDataService.DeleteTransaction(transactionId);
+				return _transactionDataService.DeleteTransaction(transactionId, clientId);
 			return false;
 		}
 

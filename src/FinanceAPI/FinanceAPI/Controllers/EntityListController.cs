@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FinanceAPI.Controllers
 {
 	[Authorize]
-	[Route("api/{clientId}")]
+	[Route("api")]
 	[ApiController]
 	public class EntityListController : Controller
 	{
@@ -24,14 +24,16 @@ namespace FinanceAPI.Controllers
 		}
 
 		[HttpGet("accounts")]
-		public IActionResult GetAccounts([FromRoute(Name = "clientId")] string clientId)
+		public IActionResult GetAccounts()
 		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_accountProcessor.GetAccounts(clientId));
 		}
 
 		[HttpGet("transactions")]
-		public IActionResult GetTransactions([FromRoute(Name = "clientId")] string clientId)
+		public IActionResult GetTransactions()
 		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_transactionProcessor.GetTransactions(clientId));
 		}
 	}

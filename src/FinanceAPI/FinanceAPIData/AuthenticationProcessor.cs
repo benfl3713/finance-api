@@ -12,8 +12,11 @@ namespace FinanceAPIData
 		IClientDataService _clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService();
 		public Client AuthenticateClient(string username, string password)
 		{
-			string hashedPassword = PasswordHasher.Hash(password);
-			return _clientDataService.LoginClient(username, hashedPassword);
+			Client client = _clientDataService.GetClientByUsername(username);
+			if (PasswordHasher.Verify(password, client.Password))
+				return client;
+
+			return null;
 		}
 	}
 }

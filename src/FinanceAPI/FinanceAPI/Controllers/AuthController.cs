@@ -28,7 +28,7 @@ namespace FinanceAPI.Controllers
         }
 
 		[HttpPost("authenticate")]
-		public IActionResult Authenticate(AuthenticateRequest model)
+		public IActionResult Authenticate([FromBody][Required] AuthenticateRequest model)
 		{
 			Client client = _authenticationProcessor.AuthenticateClient(model.Username, model.Password);
 

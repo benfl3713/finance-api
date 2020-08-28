@@ -13,25 +13,29 @@ namespace FinanceAPIData
 		{
 			// Force account id to be empty
 			account.ID = Guid.NewGuid().ToString();
+			if (string.IsNullOrEmpty(account.ClientID))
+				return null;
 			return _accountDataService.InsertAccount(account) ? account.ID : null;
 		}
 
-		public Account GetAccountById(string accountId)
+		public Account GetAccountById(string accountId, string clientId)
 		{
-			if (string.IsNullOrEmpty(accountId))
+			if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
 				return null;
-			return _accountDataService.GetAccountById(accountId);
+			return _accountDataService.GetAccountById(accountId, clientId);
 		}
 
 		public bool UpdateAccount(Account account)
 		{
+			if (string.IsNullOrEmpty(account.ClientID))
+				return false;
 			return _accountDataService.UpdateAccount(account);
 		}
 
-		public bool DeleteAccount(string accountId)
+		public bool DeleteAccount(string accountId, string clientId)
 		{
-			if (!string.IsNullOrEmpty(accountId))
-				return _accountDataService.DeleteAccount(accountId);
+			if (!string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
+				return _accountDataService.DeleteAccount(accountId, clientId);
 			return false;
 		}
 

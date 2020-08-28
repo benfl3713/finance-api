@@ -12,16 +12,21 @@ namespace FinanceAPIMongoDataService.DataService
 		string databaseName = "finance";
 		string tableName = "transactions";
 
-		public bool DeleteTransaction(string transactionId)
+		public bool DeleteTransaction(string transactionId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			return database.DeleteRecord<Transaction>(tableName, transactionId);
+			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
+			return database.DeleteRecord<Transaction>(tableName, transactionId, filter);
 		}
 
-		public Transaction GetTransactionById(string transactionId)
+		public Transaction GetTransactionById(string transactionId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			return database.LoadRecordById<Transaction>(tableName, transactionId);
+			var transaction = database.LoadRecordById<Transaction>(tableName, transactionId);
+			if (transaction != null && transaction.ClientID == clientId)
+				return transaction;
+
+			return null;
 		}
 
 		public List<Transaction> GetTransactions(string clientId)
@@ -40,7 +45,8 @@ namespace FinanceAPIMongoDataService.DataService
 		public bool UpdateTransaction(Transaction transaction)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			return database.UpdateRecord(tableName, transaction, transaction.ID);
+			var filter = Builders<Transaction>.Filter.Eq("ClientID", transaction.ClientID);
+			return database.UpdateRecord(tableName, transaction, transaction.ID, filter);
 		}
 	}
 }

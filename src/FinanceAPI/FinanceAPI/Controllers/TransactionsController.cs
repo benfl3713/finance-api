@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using FinanceAPI.Attributes;
 using FinanceAPICore;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +8,9 @@ using Newtonsoft.Json.Linq;
 
 namespace FinanceAPI.Controllers
 {
-	[Route("api/{clientId}/transaction")]
+	[Route("api/transaction")]
 	[ApiController]
+	[Authorize]
 	public class TransactionsController : Controller
 	{
 		private TransactionProcessor _transactionProcessor;
@@ -17,8 +19,9 @@ namespace FinanceAPI.Controllers
 			_transactionProcessor = transactionProcessor;
 		}
 		[HttpPost]
-		public IActionResult InsertTransaction([FromBody] JObject jsonTransaction, [FromRoute(Name = "clientId")] string clientId)
+		public IActionResult InsertTransaction([FromBody] JObject jsonTransaction)
 		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Transaction transaction = Transaction.CreateFromJson(jsonTransaction, clientId);
 			string transactionId = _transactionProcessor.InsertTransaction(transaction);
 			if (transactionId != null)
@@ -27,8 +30,9 @@ namespace FinanceAPI.Controllers
 		}
 
 		[HttpPut]
-		public IActionResult UpdateTransaction([FromBody] JObject jsonTransaction, [FromRoute(Name = "clientId")] string clientId)
+		public IActionResult UpdateTransaction([FromBody] JObject jsonTransaction)
 		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Transaction transaction = Transaction.CreateFromJson(jsonTransaction, clientId);
 			if (string.IsNullOrEmpty(transaction.ID))
 				return BadRequest("Transaction ID is required");
@@ -41,7 +45,8 @@ namespace FinanceAPI.Controllers
 		[HttpGet("{transactionId}")]
 		public IActionResult GetTransactionById([FromRoute(Name = "transactionId")][Required] string transactionId)
 		{
-			Transaction transaction = _transactionProcessor.GetTransactionById(transactionId);
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			Transaction transaction = _transactionProcessor.GetTransactionById(transactionId, clientId);
 			if (transaction == null)
 				return BadRequest("Could not find Transaction");
 			return Json(transaction);
@@ -50,7 +55,8 @@ namespace FinanceAPI.Controllers
 		[HttpGet("{transactionId}")]
 		public IActionResult DeleteTransaction([FromRoute(Name = "transactionId")][Required] string transactionId)
 		{
-			if (_transactionProcessor.DeleteTransaction(transactionId))
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			if (_transactionProcessor.DeleteTransaction(transactionId, clientId))
 				return Ok("Transaction Deleted");
 			return BadRequest("Failed to delete Transaction");
 		}

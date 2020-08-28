@@ -1,10 +1,8 @@
 ﻿using FinanceAPICore;
 using FinanceAPICore.DataService;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FinanceAPIMongoDataService.DataService
 {
@@ -13,10 +11,14 @@ namespace FinanceAPIMongoDataService.DataService
 		string databaseName = "finance";
 		string tableName = "accounts";
 
-		public Account GetAccountById(string accountId)
+		public Account GetAccountById(string accountId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			return database.LoadRecordById<Account>(tableName, accountId);
+			Account account = database.LoadRecordById<Account>(tableName, accountId);
+			if (account != null && account.ClientID == clientId)
+				return account;
+
+			return null;
 		}
 
 		public bool InsertAccount(Account account)
@@ -28,7 +30,8 @@ namespace FinanceAPIMongoDataService.DataService
 		public bool UpdateAccount(Account account)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			if(account.AvailableBalance == null || account.PendingBalance == null)
+			var filter = Builders<Account>.Filter.Eq("ClientID", account.ClientID);
+			if (account.AvailableBalance == null || account.PendingBalance == null)
 			{
 				var update = Builders<Account>.Update.Set(nameof(account.AccountName), account.AccountName);
 				if(account.AvailableBalance != null)
@@ -36,18 +39,19 @@ namespace FinanceAPIMongoDataService.DataService
 				if (account.PendingBalance != null)
 					update = update.Set(nameof(account.PendingBalance), account.PendingBalance);
 
-				return database.UpdateRecordFields(tableName, account.ID, update);
+				return database.UpdateRecordFields(tableName, account.ID, update, filter);
 			}
-			return database.UpdateRecord(tableName, account, account.ID);
+			return database.UpdateRecord(tableName, account, account.ID, filter);
 		}
 
-		public bool DeleteAccount(string accountId)
+		public bool DeleteAccount(string accountId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			return database.DeleteRecord<Account>(tableName, accountId);
+			var filter = Builders<Account>.Filter.Eq("ClientID", clientId);
+			return database.DeleteRecord(tableName, accountId, filter);
 		}
 
-		public decimal GetAccountBalance(string accountId)
+		public decimal GetAccountBalance(string accountId, string clientId)
 		{
 			throw new NotImplementedException();
 		}
