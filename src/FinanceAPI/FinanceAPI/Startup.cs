@@ -30,6 +30,16 @@ namespace FinanceAPI
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 			AddProcessors(services);
+			
+			services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(builder =>
+				{
+					builder.AllowAnyOrigin();
+					builder.AllowAnyMethod();
+					builder.AllowAnyHeader();
+				});
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,14 +51,10 @@ namespace FinanceAPI
 			}
 
 			// global cors policy
-			app.UseCors(x => x
-				.AllowAnyOrigin()
-				.AllowAnyMethod()
-				.AllowAnyHeader());
+			app.UseCors();
 
 			app.UseMiddleware<JwtMiddleware>();
 
-			app.UseHttpsRedirection();
 
 			app.UseRouting();
 

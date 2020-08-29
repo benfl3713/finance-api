@@ -13,7 +13,7 @@ namespace FinanceAPIData
 		public Client AuthenticateClient(string username, string password)
 		{
 			Client client = _clientDataService.GetClientByUsername(username);
-			if (PasswordHasher.Verify(password, client.Password))
+			if (client != null && PasswordHasher.Verify(password, client.Password))
 				return client;
 
 			return null;

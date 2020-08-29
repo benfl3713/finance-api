@@ -37,7 +37,7 @@ namespace FinanceAPI.Controllers
 
 			var token = generateJwtToken(client);
 
-			return Ok(token);
+			return Json(token);
 		}
 
 		private string generateJwtToken(Client client)

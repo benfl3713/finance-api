@@ -31,7 +31,7 @@ namespace FinanceAPI.Controllers
 
 			string clientId = _clientProcessor.InsertClient(client);
 			if (clientId != null)
-				return Ok(clientId);
+				return Json(clientId);
 			return BadRequest();
 		}
 
