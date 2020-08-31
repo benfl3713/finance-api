@@ -22,7 +22,9 @@ namespace FinanceAPIData
 		{
 			if (string.IsNullOrEmpty(transactionId))
 				return null;
-			return _transactionDataService.GetTransactionById(transactionId, clientId);
+			Transaction transaction = _transactionDataService.GetTransactionById(transactionId, clientId);
+			transaction.AccountName = new AccountProcessor().GetAccountNameById(transaction.AccountID, clientId);
+			return transaction;
 		}
 
 		public bool UpdateTransaction(Transaction transaction)
@@ -44,7 +46,9 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(clientId))
 				return null;
 
-			return _transactionDataService.GetTransactions(clientId);
+			List<Transaction> transactions = _transactionDataService.GetTransactions(clientId);
+			transactions.ForEach(t => t.AccountName = new AccountProcessor().GetAccountNameById(t.AccountID, clientId));
+			return transactions;
 		}
 	}
 }

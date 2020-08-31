@@ -15,6 +15,8 @@ namespace FinanceAPICore
         public string ClientID;
         public DateTime Date;
         public string AccountID;
+        [BsonIgnore]
+        public string AccountName;
         public string Category;
         public decimal Amount;
         public string Currency;

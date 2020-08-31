@@ -46,5 +46,17 @@ namespace FinanceAPIData
 
 			return _accountDataService.GetAccounts(clientId);
 		}
+
+		public string GetAccountNameById(string accountId, string clientId)
+		{
+			if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
+				return null;
+
+			Account account =  _accountDataService.GetAccountById(accountId, clientId);
+			if (account != null)
+				return account.AccountName;
+
+			return null;
+		}
 	}
 }
