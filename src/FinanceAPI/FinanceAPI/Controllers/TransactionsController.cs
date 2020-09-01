@@ -24,9 +24,9 @@ namespace FinanceAPI.Controllers
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Transaction transaction = Transaction.CreateFromJson(jsonTransaction, clientId);
 			string transactionId = _transactionProcessor.InsertTransaction(transaction);
-			if (transactionId != null)
+			if (transactionId != null && !transactionId.StartsWith("ERROR:"))
 				return Ok(transactionId);
-			return BadRequest();
+			return BadRequest(transactionId);
 		}
 
 		[HttpPut]

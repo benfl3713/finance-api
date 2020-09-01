@@ -1,0 +1,36 @@
+{
+    "executable": "FinanceAPI",
+    "splashscreen": {
+        "imageFile": ""
+    },
+    "name": "FinanceAPI",
+    "author": "benfl3713",
+    "singleInstance": true,
+    "aspCoreBackendPort": 5001,
+    "environment": "Development",
+    "build": {
+        "appId": "com.FinanceAPI.app",
+        "productName": "FinanceAPI",
+        "copyright": "Copyright © 2020",
+        "buildVersion": "1.0.0",
+        "compression": "maximum",
+        "directories": {
+            "output": "../../../bin/Desktop"
+        },
+        "extraResources": [
+            {
+                "from": "./bin",
+                "to": "bin",
+                "filter": [ "**/*" ]
+            }
+        ],
+        "files": [
+            {
+                "from": "./ElectronHostHook/node_modules",
+                "to": "ElectronHostHook/node_modules",
+                "filter": [ "**/*" ]
+            },
+            "**/*"
+        ]
+    }
+}

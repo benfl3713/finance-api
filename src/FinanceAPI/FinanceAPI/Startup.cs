@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using ElectronNET.API;
+using ElectronNET.API.Entities;
 using FinanceAPI.Middleware;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Builder;
@@ -62,6 +66,9 @@ namespace FinanceAPI
 			{
 				endpoints.MapControllers();
 			});
+
+			if (HybridSupport.IsElectronActive)
+				SetupElectron(env);				
 		}
 
 		private void AddProcessors(IServiceCollection services)
@@ -70,6 +77,40 @@ namespace FinanceAPI
 			services.AddTransient<AccountProcessor>();
 			services.AddTransient<TransactionProcessor>();
 			services.AddTransient<AuthenticationProcessor>();
+		}
+
+		private void SetupElectron(IWebHostEnvironment env)
+		{
+			string icon = Path.Combine(Environment.CurrentDirectory, "./wwwroot/logo_square.png");
+
+			if (Electron.Tray.MenuItems.Count == 0)
+			{
+				var menu = new MenuItem
+				{
+					Label = "Exit",
+					Click = () => Electron.App.Exit()
+				};
+
+				Electron.Tray.Show(icon, menu);
+				Electron.Tray.SetToolTip("FinanceAPI");
+			}
+
+			var options = new BrowserWindowOptions
+			{
+				Show = false
+			};
+
+			Task.Run(async () => await Electron.WindowManager.CreateWindowAsync(options));
+
+			if (env.IsDevelopment())
+			{
+				var startNotification = new NotificationOptions("Finance API", "FinanceAPI has started on http://localhost:5001")
+				{
+					Icon = icon
+				};
+
+				Electron.Notification.Show(startNotification);
+			}
 		}
 	}
 }
