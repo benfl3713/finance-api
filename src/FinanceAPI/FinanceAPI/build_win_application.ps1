@@ -1,0 +1,1 @@
+electronize build /target win /dotnet-configuration Release /absolute-path "C:\Users\buses\Desktop\output"

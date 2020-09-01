@@ -2,6 +2,7 @@
 using FinanceAPICore.DataService;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FinanceAPIData
@@ -46,13 +47,16 @@ namespace FinanceAPIData
 			return false;
 		}
 
-		public List<Transaction> GetTransactions(string clientId)
+		public List<Transaction> GetTransactions(string clientId, string accountId = null)
 		{
 			if (string.IsNullOrEmpty(clientId))
 				return null;
 
 			List<Transaction> transactions = _transactionDataService.GetTransactions(clientId);
 			transactions.ForEach(t => t.AccountName = new AccountProcessor().GetAccountNameById(t.AccountID, clientId));
+
+			if (!string.IsNullOrEmpty(accountId))
+				transactions = transactions.Where(t => t.AccountID == accountId).ToList();
 			return transactions;
 		}
 	}
