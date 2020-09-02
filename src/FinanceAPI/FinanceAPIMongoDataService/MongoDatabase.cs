@@ -2,6 +2,8 @@
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace FinanceAPIMongoDataService
@@ -110,6 +112,20 @@ namespace FinanceAPIMongoDataService
 			{
 				Console.WriteLine(ex.Message);
 				return false;
+			}
+		}
+
+		public decimal GetSumOfFields<T>(string table, Expression<Func<T, decimal>> sumFieldSelector, Expression<Func<T, bool>> filter)
+		{
+			try
+			{
+				var collection = db.GetCollection<T>(table);
+				return collection.AsQueryable().Where(filter).Select(sumFieldSelector).ToList().Sum();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return default;
 			}
 		}
 	}

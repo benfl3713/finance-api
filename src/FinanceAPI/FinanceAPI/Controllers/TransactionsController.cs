@@ -52,7 +52,7 @@ namespace FinanceAPI.Controllers
 			return Json(transaction);
 		}
 
-		[HttpGet("{transactionId}")]
+		[HttpDelete("{transactionId}")]
 		public IActionResult DeleteTransaction([FromRoute(Name = "transactionId")][Required] string transactionId)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();

@@ -9,8 +9,8 @@ namespace FinanceAPIMongoDataService.DataService
 {
 	public class TransactionsDataService : ITransactionsDataService
 	{
-		string databaseName = "finance";
-		string tableName = "transactions";
+		public static string databaseName = "finance";
+		public static string tableName = "transactions";
 
 		public bool DeleteTransaction(string transactionId, string clientId)
 		{

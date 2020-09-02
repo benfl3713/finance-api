@@ -3,20 +3,25 @@ using FinanceAPICore.DataService;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FinanceAPIMongoDataService.DataService
 {
 	public class AccountDataService : IAccountDataService
 	{
-		string databaseName = "finance";
-		string tableName = "accounts";
+		static string databaseName = "finance";
+		static string tableName = "accounts";
 
 		public Account GetAccountById(string accountId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			Account account = database.LoadRecordById<Account>(tableName, accountId);
 			if (account != null && account.ClientID == clientId)
+			{
+				account.CurrentBalance = GetCurrentAccountBalance(account.ID);
+				account.AvailableBalance = GetPendingAccountBalance(account.ID);
 				return account;
+			}
 
 			return null;
 		}
@@ -31,16 +36,6 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			var filter = Builders<Account>.Filter.Eq("ClientID", account.ClientID);
-			if (account.AvailableBalance == null || account.PendingBalance == null)
-			{
-				var update = Builders<Account>.Update.Set(nameof(account.AccountName), account.AccountName);
-				if(account.AvailableBalance != null)
-					update = update.Set(nameof(account.AvailableBalance), account.AvailableBalance);
-				if (account.PendingBalance != null)
-					update = update.Set(nameof(account.PendingBalance), account.PendingBalance);
-
-				return database.UpdateRecordFields(tableName, account.ID, update, filter);
-			}
 			return database.UpdateRecord(tableName, account, account.ID, filter);
 		}
 
@@ -51,16 +46,30 @@ namespace FinanceAPIMongoDataService.DataService
 			return database.DeleteRecord(tableName, accountId, filter);
 		}
 
-		public decimal GetAccountBalance(string accountId, string clientId)
-		{
-			throw new NotImplementedException();
-		}
-
 		public List<Account> GetAccounts(string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			var filter = Builders<Account>.Filter.Eq("ClientID", clientId);
-			return database.LoadRecordsByFilter(tableName, filter);
+			var accounts =  database.LoadRecordsByFilter(tableName, filter);
+			Parallel.ForEach(accounts, a =>
+			{
+				a.CurrentBalance = GetCurrentAccountBalance(a.ID);
+				a.AvailableBalance = GetPendingAccountBalance(a.ID);
+			});
+
+			return accounts;
+		}
+
+		private decimal GetCurrentAccountBalance(string accountId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.GetSumOfFields<Transaction>(TransactionsDataService.tableName, t => t.Amount, t => t.AccountID == accountId && t.Status != Status.PENDING);
+		}
+
+		private decimal GetPendingAccountBalance(string accountId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			return database.GetSumOfFields<Transaction>(TransactionsDataService.tableName, t => t.Amount, t => t.AccountID == accountId);
 		}
 	}
 }

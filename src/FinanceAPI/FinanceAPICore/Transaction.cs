@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,9 @@ namespace FinanceAPICore
         public string Type;
         public string Note;
         public string Logo;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Status Status = Status.SETTLED;
+
 
         public Transaction()
         {
@@ -69,7 +73,14 @@ namespace FinanceAPICore
             transaction.Type = jTransaction["Type"]?.ToString();
             transaction.Note = jTransaction["Note"]?.ToString();
             transaction.ClientID = clientId;
+			Enum.TryParse(jTransaction["Status"]?.ToString()?.ToUpper(), out transaction.Status);
             return transaction;
         }
+    }
+
+    public enum Status
+    {
+        SETTLED,
+        PENDING
     }
 }

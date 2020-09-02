@@ -11,8 +11,10 @@ namespace FinanceAPICore
 		[JsonIgnore]
         public string ClientID;
         public string AccountName;
+        [BsonIgnore]
+        public decimal? CurrentBalance;
+        [BsonIgnore]
         public decimal? AvailableBalance;
-        public decimal? PendingBalance;
 
         public Account()
 		{
@@ -33,8 +35,6 @@ namespace FinanceAPICore
             Account account = new Account();
             account.ID = jAccount["ID"]?.ToString();
             account.AccountName = jAccount["AccountName"]?.ToString();
-            account.AvailableBalance = decimal.TryParse(jAccount["AvailableBalance"]?.ToString(), out decimal availableBalance) ? availableBalance as decimal? : null;
-            account.PendingBalance = decimal.TryParse(jAccount["PendingBalance"]?.ToString(), out decimal pendingBalance) ? pendingBalance as decimal? : null;
             account.ClientID = clientId;
             return account;
         }
