@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  finance-api:
+    build:
+        context: ./src/FinanceAPI
+        dockerfile: "Dockerfile"
+    image: finance-api:latest
+    ports:
+      - "5001:80"

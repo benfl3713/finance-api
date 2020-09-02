@@ -1,0 +1,7 @@
+.vs/
+.github/
+.vscode/
+bin/
+obj/
+FinanceAPI/bin/
+FinanceAPI/obj/
