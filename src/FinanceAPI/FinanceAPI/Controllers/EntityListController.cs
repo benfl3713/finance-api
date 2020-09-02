@@ -34,7 +34,7 @@ namespace FinanceAPI.Controllers
 		public IActionResult GetTransactions(string accountId = null)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
-			return Json(_transactionProcessor.GetTransactions(clientId));
+			return Json(_transactionProcessor.GetTransactions(clientId, accountId));
 		}
 	}
 }

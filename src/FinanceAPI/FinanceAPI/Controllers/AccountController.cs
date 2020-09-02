@@ -29,7 +29,7 @@ namespace FinanceAPI.Controllers
 			Account account = Account.CreateFromJson(jsonAccount, clientId);
 			string accountId = _accountProcessor.InsertAccount(account);
 			if (accountId != null)
-				return Ok(accountId);
+				return Json(accountId);
 			return BadRequest();
 		}
 
@@ -42,7 +42,7 @@ namespace FinanceAPI.Controllers
 				return BadRequest("Account ID is required");
 
 			if (_accountProcessor.UpdateAccount(account))
-				return Ok("Account Updated");
+				return Json("Account Updated");
 			return BadRequest();
 		}
 
@@ -61,7 +61,7 @@ namespace FinanceAPI.Controllers
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			if (_accountProcessor.DeleteAccount(accountId, clientId))
-				return Ok("Account Deleted");
+				return Json("Account Deleted");
 			return BadRequest("Failed to delete Account");
 		}
 	}

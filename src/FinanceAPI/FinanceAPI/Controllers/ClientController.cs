@@ -44,7 +44,7 @@ namespace FinanceAPI.Controllers
 				return BadRequest("Client ID is required");
 
 			if (_clientProcessor.UpdateClient(client))
-				return Ok("Client Updated");
+				return Json("Client Updated");
 			return BadRequest();
 		}
 
@@ -63,7 +63,7 @@ namespace FinanceAPI.Controllers
 		public IActionResult DeleteClient([FromRoute(Name = "clientId")][Required] string clientId)
 		{
 			if (_clientProcessor.DeleteClient(clientId))
-				return Ok("Client Deleted");
+				return Json("Client Deleted");
 			return BadRequest("Failed to delete client");
 		}
 	}

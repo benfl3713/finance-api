@@ -25,7 +25,7 @@ namespace FinanceAPI.Controllers
 			Transaction transaction = Transaction.CreateFromJson(jsonTransaction, clientId);
 			string transactionId = _transactionProcessor.InsertTransaction(transaction);
 			if (transactionId != null && !transactionId.StartsWith("ERROR:"))
-				return Ok(transactionId);
+				return Json(transactionId);
 			return BadRequest(transactionId);
 		}
 
@@ -38,7 +38,7 @@ namespace FinanceAPI.Controllers
 				return BadRequest("Transaction ID is required");
 
 			if (_transactionProcessor.UpdateTransaction(transaction))
-				return Ok("Transaction Updated");
+				return Json("Transaction Updated");
 			return BadRequest();
 		}
 
@@ -57,7 +57,7 @@ namespace FinanceAPI.Controllers
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			if (_transactionProcessor.DeleteTransaction(transactionId, clientId))
-				return Ok("Transaction Deleted");
+				return Json("Transaction Deleted");
 			return BadRequest("Failed to delete Transaction");
 		}
 	}
