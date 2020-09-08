@@ -9,4 +9,12 @@
     <ProjectReference Include="..\FinanceAPIMongoDataService\FinanceAPIMongoDataService.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Datafeeds\Importers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="106.11.4" />
+  </ItemGroup>
+
 </Project>

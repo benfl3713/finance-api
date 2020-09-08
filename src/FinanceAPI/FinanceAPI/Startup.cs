@@ -32,9 +32,10 @@ namespace FinanceAPI
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
-			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+			services.Configure<AppSettings>(Configuration);
 			AddProcessors(services);
-			
+			services.AddTransient<JwtMiddleware>();
+
 			services.AddCors(options =>
 			{
 				options.AddDefaultPolicy(builder =>
@@ -77,6 +78,7 @@ namespace FinanceAPI
 			services.AddTransient<AccountProcessor>();
 			services.AddTransient<TransactionProcessor>();
 			services.AddTransient<AuthenticationProcessor>();
+			services.AddTransient<DatafeedProcessor>();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)
@@ -104,7 +106,7 @@ namespace FinanceAPI
 
 			if (env.IsDevelopment())
 			{
-				var startNotification = new NotificationOptions("Finance API", "FinanceAPI has started on http://localhost:5001")
+				var startNotification = new NotificationOptions("Finance API", "FinanceAPI has started")
 				{
 					Icon = icon
 				};

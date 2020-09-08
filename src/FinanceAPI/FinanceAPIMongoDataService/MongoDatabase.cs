@@ -79,6 +79,40 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
+		public bool PartialUpdateRecord<T>(string table, UpdateDefinition<T> updateDefinition, FilterDefinition<T> filter = null)
+		{
+			try
+			{
+				var collection = db.GetCollection<T>(table);
+				collection.UpdateOne(filter, updateDefinition);
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return false;
+			}
+		}
+
+		public bool UpsertRecord<T>(string table, T record, string id, FilterDefinition<T> customFilter = null)
+		{
+			try
+			{
+				var collection = db.GetCollection<T>(table);
+				var filter = Builders<T>.Filter.Eq("ID", id);
+				if (customFilter != null)
+					filter = filter & customFilter;
+				var options = new ReplaceOptions { IsUpsert = true };
+				collection.ReplaceOne(filter, record, options);
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return false;
+			}
+		}
+
 		public bool UpdateRecordFields<T>(string table, string id, UpdateDefinition<T> updateDefinition, FilterDefinition<T> customFilter = null)
 		{
 			try
@@ -97,12 +131,12 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
-		public bool DeleteRecord<T>(string table, string id, FilterDefinition<T> customFilter = null)
+		public bool DeleteRecord<T>(string table, string id, FilterDefinition<T> customFilter = null, string idField = "ID")
 		{
 			try
 			{
 				var collection = db.GetCollection<T>(table);
-				var filter = Builders<T>.Filter.Eq("ID", id);
+				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
 					filter = filter & customFilter;
 				var result = collection.DeleteOne(filter);

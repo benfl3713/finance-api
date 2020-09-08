@@ -24,6 +24,11 @@ namespace FinanceAPI
 					webBuilder.UseWebRoot("wwwroot");
 					webBuilder.UseElectron(args);
 					webBuilder.UseStartup<Startup>();
-				});
+				}).
+			ConfigureAppConfiguration(configurationBuilder => {
+				configurationBuilder.AddEnvironmentVariables();
+				if (System.IO.File.Exists("user.appsettings.json"))
+					configurationBuilder.AddJsonFile("user.appsettings.json");
+			});
 	}
 }

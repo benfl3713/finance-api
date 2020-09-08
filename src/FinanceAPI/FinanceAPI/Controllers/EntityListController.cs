@@ -17,10 +17,12 @@ namespace FinanceAPI.Controllers
 	{
 		private AccountProcessor _accountProcessor;
 		private TransactionProcessor _transactionProcessor;
-		public EntityListController(AccountProcessor accountProcessor, TransactionProcessor transactionProcessor)
+		private DatafeedProcessor _datafeedProcessor;
+		public EntityListController(AccountProcessor accountProcessor, TransactionProcessor transactionProcessor, DatafeedProcessor datafeedProcessor)
 		{
 			_accountProcessor = accountProcessor;
 			_transactionProcessor = transactionProcessor;
+			_datafeedProcessor = datafeedProcessor;
 		}
 
 		[HttpGet("accounts")]
@@ -35,6 +37,13 @@ namespace FinanceAPI.Controllers
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_transactionProcessor.GetTransactions(clientId, accountId));
+		}
+
+		[HttpGet("datafeeds")]
+		public IActionResult GetDatafeeds(string datafeedType = null)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_datafeedProcessor.GetDatafeeds(clientId, datafeedType));
 		}
 	}
 }

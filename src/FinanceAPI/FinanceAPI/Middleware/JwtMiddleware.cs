@@ -20,6 +20,11 @@ namespace FinanceAPI.Middleware
             _appSettings = appSettings.Value;
         }
 
+		public JwtMiddleware(IOptions<AppSettings> appSettings)
+		{
+            _appSettings = appSettings.Value;
+        }
+
         public async Task Invoke(HttpContext context)
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
@@ -30,10 +35,10 @@ namespace FinanceAPI.Middleware
             await _next(context);
         }
 
-        private void attachUserToContext(HttpContext context, string token)
-        {
-            try
-            {
+        public string GetClientIdFromToken(string token)
+		{
+			try
+			{
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_appSettings.JwtSecret);
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -47,7 +52,19 @@ namespace FinanceAPI.Middleware
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = jwtToken.Claims.First(x => x.Type == "id").Value;
+                return jwtToken.Claims.First(x => x.Type == "id").Value;
+            }
+			catch(Exception ex) {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+		}
+
+        private void attachUserToContext(HttpContext context, string token)
+        {
+            try
+            {
+                var userId = GetClientIdFromToken(token);
 
                 // attach user to context on successful jwt validation
                 context.Items["ClientId"] = userId;

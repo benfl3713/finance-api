@@ -8,5 +8,7 @@ namespace FinanceAPI
 	public class AppSettings
 	{
 		public string JwtSecret { get; set; }
+		public string TrueLayer_ClientID { get; set; }
+		public string TrueLayer_ClientSecret { get; set; }
 	}
 }
