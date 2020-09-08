@@ -41,5 +41,13 @@ namespace FinanceAPIData
 
 			return _datafeedDataService.RemoveAccountDatafeedMapping(clientId, accountID);
 		}
+
+		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID)
+		{
+			if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(provider) || string.IsNullOrEmpty(vendorID))
+				return false;
+
+			return _datafeedDataService.DeleteClientDatafeed(clientId, provider, vendorID);
+		}
 	}
 }

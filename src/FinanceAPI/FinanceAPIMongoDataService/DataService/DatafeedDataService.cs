@@ -30,7 +30,7 @@ namespace FinanceAPIMongoDataService.DataService
 		public bool RemoveAccountDatafeedMapping(string clientId, string accountID)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
-			var filter = Builders<Datafeed>.Filter.Eq("clientId", clientId);
+			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId);
 
 			return database.DeleteRecord(externalAccountMappingsTable, accountID, filter, "_id");
 		}
@@ -39,6 +39,17 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			return database.UpsertRecord(datafeedTableName, datafeed, datafeed._id);
+		}
+
+		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			var clientFilter = Builders<Datafeed>.Filter.Eq("ClientId", clientId);
+			var filter = Builders<Datafeed>.Filter.Eq("datafeed", provider) & Builders<Datafeed>.Filter.Eq("vendorID", vendorID);
+
+			database.DeleteManyRecords(externalAccountMappingsTable, filter);
+
+			return database.DeleteRecord(datafeedTableName, new Datafeed(clientId, provider, vendorID, null, DateTime.MinValue)._id, clientFilter, "_id");
 		}
 
 		public List<Datafeed> GetDatafeeds(string clientId)

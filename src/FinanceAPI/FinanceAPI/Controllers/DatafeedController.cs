@@ -71,5 +71,15 @@ namespace FinanceAPI.Controllers
 				? Json(null) as IActionResult
 				: BadRequest();
 		}
+
+		[HttpDelete("[action]")]
+		public IActionResult DeleteDatafeed([Required] string provider, [Required] string vendorId)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+
+			return _datafeedProcessor.DeleteClientDatafeed(clientId, provider, vendorId)
+				? Json(null) as IActionResult
+				: BadRequest();
+		}
 	}
 }

@@ -149,6 +149,21 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
+		public bool DeleteManyRecords<T>(string table, FilterDefinition<T> filter)
+		{
+			try
+			{
+				var collection = db.GetCollection<T>(table);
+				var result = collection.DeleteMany(filter);
+				return result.DeletedCount > 0;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return false;
+			}
+		}
+
 		public decimal GetSumOfFields<T>(string table, Expression<Func<T, decimal>> sumFieldSelector, Expression<Func<T, bool>> filter)
 		{
 			try
