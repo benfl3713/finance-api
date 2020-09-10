@@ -1,5 +1,6 @@
 ﻿using FinanceAPICore;
 using FinanceAPICore.DataService;
+using FinanceAPICore.Tasks;
 using FinanceAPIData.Datafeeds.APIs;
 using System;
 using System.Collections.Generic;
@@ -9,43 +10,45 @@ using System.Threading.Tasks;
 
 namespace FinanceAPIData.Tasks
 {
-	public class AccountRefresh
-	{
+	public class AccountRefresh : BaseTask
+    {
         private IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
         private IAccountDataService _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService();
-        public void Execute(Dictionary<string, object> args)
+        private ITransactionsDataService _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService();
+        public override void Execute(Dictionary<string, object> args, TaskSettings settings)
         {
             if (string.IsNullOrEmpty(args["AccountID"].ToString()))
             {
+                base.Execute(args, settings);
                 return;
             }
 
             string accountID = args["AccountID"].ToString();
-            if (_accountDataService.GetAccounts("clientID").Where(a => a.ID == accountID).Count() == 0)
+            if (_accountDataService.GetAccounts(Task.ClientID).Where(a => a.ID == accountID).Count() == 0)
+            {
+                base.Execute(args, settings);
+                return;
+            }
+
+            ExternalAccount externalAccount =  _datafeedDataService.GetExternalAccounts(Task.ClientID, accountID).FirstOrDefault();
+            string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
+            Account account = _accountDataService.GetAccountById(accountID, Task.ClientID);
+            IDatafeedAPI datafeedApi = new TrueLayerAPI(settings.TrueLayer_ClientID, settings.TrueLayer_ClientSecret);
+
+            if (string.IsNullOrEmpty(externalAccount?.AccountID) || string.IsNullOrEmpty(encryptedAccessKey) || account == null || datafeedApi == null)
             {
                 return;
             }
 
-            string externalAccountID = "" /*= _datafeedDataService.GetExternalAccountMapping(accountID)*/;
-            string encryptedAccessKey = "" /*= _datafeedDataService.GetAccessKeyForExternalAccount(externalAccountID, Task.ClientID)*/;
-            string datafeed = "TRUELAYER";
-            Account account = _accountDataService.GetAccountById(accountID, "clientID");
-            IDatafeedAPI datafeedApi = new TrueLayerAPI("", "");
-
-            if (string.IsNullOrEmpty(externalAccountID) || string.IsNullOrEmpty(encryptedAccessKey) || account == null || datafeedApi == null)
-            {
-                return;
-            }
-
-            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccountID, encryptedAccessKey, out decimal accountBalance);
+            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance);
             Console.WriteLine($"Fetched [{transactions.Count}] transactions from provider");
 
-            if (datafeed == "PLAID" && transactions.Count == 500)
+            if (externalAccount.Provider == "PLAID" && transactions.Count == 500)
             {
                 int lastCount = 500;
                 for (int i = 1; i < 51; i++)
                 {
-                    transactions.AddRange(datafeedApi.GetAccountTransactions(externalAccountID, encryptedAccessKey, out decimal _, null, DateTime.Now.AddMonths(-i)));
+                    transactions.AddRange(datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal _, null, DateTime.Now.AddMonths(-i)));
                     if (lastCount + 500 != transactions.Count)
                         break;
 
@@ -56,6 +59,7 @@ namespace FinanceAPIData.Tasks
             List<Transaction> sortedTransactions = new List<Transaction>();
             foreach (var transaction in transactions)
             {
+                transaction.ClientID = Task.ClientID;
                 transaction.AccountID = accountID;
                 transaction.AccountName = account?.AccountName ?? "Unknown";
                 if (sortedTransactions.Where(t => t.ID == transaction.ID).Count() == 0)
@@ -66,35 +70,34 @@ namespace FinanceAPIData.Tasks
             sortedTransactions = MerchantAlgorithm(sortedTransactions);
             sortedTransactions = VendorAlgorithm(sortedTransactions);
 
-            int newTransactions = 0, updatedTransactions = 0;
-
             //Add All sorted transactions
             foreach (Transaction transaction in sortedTransactions)
             {
-                //bool? imported = TransactionsDataService.ImportTransaction(transaction, Task.ClientID);
-                //if (imported == true)
-                //    newTransactions++;
-                //else if (imported == null)
-                //    updatedTransactions++;
-            }
+				bool? imported = _transactionDataService.ImportDatafeedTransaction(transaction);
+			}
 
-            Console.WriteLine($"{newTransactions} new transactions were imported, {updatedTransactions} transactions were updated");
+            // Reload account to get new balance
+            account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
             BalanceAccount(account, accountBalance);
+
+            base.Execute(args, settings);
         }
 
         private void BalanceAccount(Account account, decimal accountBalance)
         {
-            //if (accountBalance != 0 && account.CurrentBalance != accountBalance)
-            //{
-            //    decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance);
-            //    List<Transaction> recentTransactions = TransactionsDataService.GetTransactions(Task.ClientID).Where(t => t.Date > DateTime.Now.AddMonths(-1)).ToList();
-            //    List<Transaction> adjusts = recentTransactions.Where(t => t.Merchant == "Atlas Adjustment Transaction" && t.Type == "Adjust" && t.Amount == (account.CurrentBalance <= accountBalance ? -difference : difference)).ToList();
-            //    Transaction transaction = new Transaction(null, DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Atlas Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
-            //    Console.WriteLine($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
-            //    transaction.AddTransaction();
-            //}
-        }
+			if (accountBalance != 0 && account.CurrentBalance != accountBalance)
+			{
+				decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance);
+				List<Transaction> recentTransactions = _transactionDataService.GetTransactions(Task.ClientID).Where(t => t.Date > DateTime.Now.AddMonths(-1)).ToList();
+				List<Transaction> adjusts = recentTransactions.Where(t => t.Merchant == "Adjustment Transaction" && t.Type == "Adjust" && t.Amount == (account.CurrentBalance <= accountBalance ? -difference : difference)).ToList();
+				Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
+                transaction.ClientID = Task.ClientID;
+                transaction.Owner = nameof(AccountRefresh);
+				Console.WriteLine($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
+                _transactionDataService.InsertTransaction(transaction);
+			}
+		}
 
         private List<Transaction> MerchantAlgorithm(List<Transaction> transactions)
         {

@@ -10,6 +10,8 @@ namespace FinanceAPICore.DataService
 		Transaction GetTransactionById(string transactionId, string clientId);
 		bool UpdateTransaction(Transaction transaction);
 		bool DeleteTransaction(string transactionId, string clientId);
+		bool DeleteAllAccountTransactions(string accountId, string clientId);
 		List<Transaction> GetTransactions(string clientId);
+		bool ImportDatafeedTransaction(Transaction transaction);
 	}
 }

@@ -21,11 +21,13 @@ namespace FinanceAPI.Controllers
 	public class DatafeedController : Controller
 	{
 		private DatafeedProcessor _datafeedProcessor;
+		private TaskProcessor _taskProcessor;
 		private AppSettings _appSettings;
-		public DatafeedController(DatafeedProcessor datafeedProcessor, IOptions<AppSettings> appSettings)
+		public DatafeedController(DatafeedProcessor datafeedProcessor, IOptions<AppSettings> appSettings, TaskProcessor taskProcessor)
 		{
 			_datafeedProcessor = datafeedProcessor;
 			_appSettings = appSettings.Value;
+			_taskProcessor = taskProcessor;
 		}
 
 		[HttpGet("[action]")]
@@ -43,6 +45,13 @@ namespace FinanceAPI.Controllers
 					trueLayerAPI._Secret = _appSettings.TrueLayer_ClientSecret;
 				}
 				accounts.AddRange(datafeedApi.GetExternalAccounts(clientId, datafeed.AccessKey, datafeed.VendorID, datafeed.VendorName, datafeed.Provider));
+			}
+
+			List<ExternalAccount> mappedAccounts = _datafeedProcessor.GetExternalAccounts(clientId);
+			foreach (ExternalAccount account in mappedAccounts)
+			{
+				if (!accounts.Any(a => a.AccountID == account.AccountID))
+					accounts.Add(account);
 			}
 
 			return Json(accounts);
@@ -63,11 +72,11 @@ namespace FinanceAPI.Controllers
 		}
 
 		[HttpDelete("[action]")]
-		public IActionResult RemoveExternalAccountMapping([Required] string accountId)
+		public IActionResult RemoveExternalAccountMapping([Required] string accountId, [Required] string externalAccountId)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 
-			return _datafeedProcessor.RemoveExternalAccountMapping(clientId, accountId)
+			return _datafeedProcessor.RemoveExternalAccountMapping(clientId, accountId, externalAccountId)
 				? Json(null) as IActionResult
 				: BadRequest();
 		}
@@ -79,6 +88,16 @@ namespace FinanceAPI.Controllers
 
 			return _datafeedProcessor.DeleteClientDatafeed(clientId, provider, vendorId)
 				? Json(null) as IActionResult
+				: BadRequest();
+		}
+
+		[HttpGet("[action]")]
+		public IActionResult RefreshAccount([Required] string accountId)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+
+			return _taskProcessor.RefreshAccount(clientId, accountId)
+				? Json("Account is refreshing in the background") as IActionResult
 				: BadRequest();
 		}
 	}

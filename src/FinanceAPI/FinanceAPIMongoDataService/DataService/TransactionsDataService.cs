@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
@@ -11,6 +12,13 @@ namespace FinanceAPIMongoDataService.DataService
 	{
 		public static string databaseName = "finance";
 		public static string tableName = "transactions";
+
+		public bool DeleteAllAccountTransactions(string accountId, string clientId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName);
+			var filter = Builders<Transaction>.Filter.Eq(t => t.ClientID, clientId) & Builders<Transaction>.Filter.Eq(t => t.AccountID, accountId);
+			return database.DeleteManyRecords(tableName, filter);
+		}
 
 		public bool DeleteTransaction(string transactionId, string clientId)
 		{
@@ -33,7 +41,20 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
-			return database.LoadRecordsByFilter(tableName, filter);
+			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
+		}
+
+		public bool ImportDatafeedTransaction(Transaction transaction)
+		{
+			Transaction existingTransaction = GetTransactionById(transaction.ID, transaction.ClientID);
+			if(existingTransaction != null)
+			{
+				if (existingTransaction.Owner == "User")
+					return false;
+				return UpdateTransaction(transaction);
+			}
+
+			return InsertTransaction(transaction);
 		}
 
 		public bool InsertTransaction(Transaction transaction)

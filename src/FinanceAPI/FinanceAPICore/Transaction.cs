@@ -28,6 +28,8 @@ namespace FinanceAPICore
         public string Logo;
         [JsonConverter(typeof(StringEnumConverter))]
         public Status Status = Status.SETTLED;
+        [JsonIgnore]
+        public string Owner = "User";
 
 
         public Transaction()
@@ -45,7 +47,6 @@ namespace FinanceAPICore
             Type = type;
             Note = note;
             Logo = logo;
-            CalculateLogo();
         }
 
         private void CalculateLogo()

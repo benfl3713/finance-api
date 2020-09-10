@@ -20,6 +20,8 @@ namespace FinanceAPIData
 			if (new AccountProcessor().GetAccountById(transaction.AccountID, transaction.ClientID) == null)
 				return "ERROR:Account Does not exist";
 
+			transaction.Owner = "User";
+
 			return _transactionDataService.InsertTransaction(transaction) ? transaction.ID : null;
 		}
 
@@ -37,6 +39,7 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(transaction.ClientID))
 				return false;
 
+			transaction.Owner = "User";
 			return _transactionDataService.UpdateTransaction(transaction);
 		}
 

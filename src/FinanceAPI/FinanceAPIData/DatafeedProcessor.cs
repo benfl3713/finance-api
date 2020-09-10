@@ -30,16 +30,16 @@ namespace FinanceAPIData
 			return _datafeedDataService.AddAccountDatafeedMapping(clientId, datafeed, vendorID, accountID, externalAccountID);
 		}
 
-		public bool RemoveExternalAccountMapping(string clientId, string accountID)
+		public bool RemoveExternalAccountMapping(string clientId, string accountID, string externalAccountId)
 		{
-			if (string.IsNullOrEmpty(accountID))
+			if (string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountId))
 				return false;
 
 			var account = new AccountProcessor().GetAccountById(accountID, clientId);
 			if (account == null)
 				return false;
 
-			return _datafeedDataService.RemoveAccountDatafeedMapping(clientId, accountID);
+			return _datafeedDataService.RemoveAccountDatafeedMapping(clientId, accountID, externalAccountId);
 		}
 
 		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID)
@@ -48,6 +48,11 @@ namespace FinanceAPIData
 				return false;
 
 			return _datafeedDataService.DeleteClientDatafeed(clientId, provider, vendorID);
+		}
+
+		public List<ExternalAccount> GetExternalAccounts(string clientId, string accountId = null)
+		{
+			return _datafeedDataService.GetExternalAccounts(clientId, accountId);
 		}
 	}
 }

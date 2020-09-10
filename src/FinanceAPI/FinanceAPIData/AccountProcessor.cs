@@ -9,6 +9,8 @@ namespace FinanceAPIData
 	public class AccountProcessor
 	{
 		IAccountDataService _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService();
+		ITransactionsDataService _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService();
+		IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
 		public string InsertAccount(Account account)
 		{
 			// Force account id to be empty
@@ -35,7 +37,12 @@ namespace FinanceAPIData
 		public bool DeleteAccount(string accountId, string clientId)
 		{
 			if (!string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
+			{
+				if (!_transactionDataService.DeleteAllAccountTransactions(accountId, clientId) 
+					|| !_datafeedDataService.RemoveAllAccountDatafeedMappings(clientId, accountId))
+					return false;
 				return _accountDataService.DeleteAccount(accountId, clientId);
+			}
 			return false;
 		}
 

@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using FinanceAPI.Middleware;
+using FinanceAPICore.Tasks;
 using FinanceAPIData;
+using FinanceAPIData.TaskManagment;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FinanceAPI
 {
@@ -33,8 +36,16 @@ namespace FinanceAPI
 		{
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
 			services.Configure<AppSettings>(Configuration);
+			services.Configure<TaskSettings>(Configuration.GetSection("TaskSettings"));
+			services.Configure<TaskSettings>(settings =>
+			{
+				settings.TrueLayer_ClientID = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientID));
+				settings.TrueLayer_ClientSecret = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientSecret));
+			});
+
 			AddProcessors(services);
 			services.AddTransient<JwtMiddleware>();
+			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>()));
 
 			services.AddCors(options =>
 			{
@@ -69,7 +80,9 @@ namespace FinanceAPI
 			});
 
 			if (HybridSupport.IsElectronActive)
-				SetupElectron(env);				
+				SetupElectron(env);
+
+			app.ApplicationServices.GetService<TaskPoller>();
 		}
 
 		private void AddProcessors(IServiceCollection services)
@@ -79,6 +92,7 @@ namespace FinanceAPI
 			services.AddTransient<TransactionProcessor>();
 			services.AddTransient<AuthenticationProcessor>();
 			services.AddTransient<DatafeedProcessor>();
+			services.AddTransient<TaskProcessor>();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)
@@ -102,7 +116,7 @@ namespace FinanceAPI
 				Show = false
 			};
 
-			Task.Run(async () => await Electron.WindowManager.CreateWindowAsync(options));
+			System.Threading.Tasks.Task.Run(async () => await Electron.WindowManager.CreateWindowAsync(options));
 
 			if (env.IsDevelopment())
 			{

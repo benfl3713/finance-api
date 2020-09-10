@@ -125,7 +125,7 @@ namespace FinanceAPIData.Datafeeds.APIs
                 var client = new RestClient($"{_ApiUrl}/data/v1/accounts/{externalAccountID}/transactions");
                 var request = new RestRequest(Method.GET);
                 request.AddParameter("from", DateTime.MinValue.ToString("yyyy-MM-ddTH:mm:ss"));
-                request.AddParameter("to", DateTime.Now.ToString("yyyy-MM-ddTH:mm:ss"));
+                request.AddParameter("to", DateTime.UtcNow.ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
@@ -169,7 +169,9 @@ namespace FinanceAPIData.Datafeeds.APIs
                     if (string.IsNullOrEmpty(vendor))
                         vendor = ((string)transaction.meta?.provider_merchant_name ?? "").ToTitleCase();
                     string merchant = ((string)transaction["description"]).ToTitleCase();
-                    transactions.Add(new Transaction(transactionID, date, accountId, category, amount, vendor, merchant, type));
+					Transaction t = new Transaction(transactionID, date, accountId, category, amount, vendor, merchant, type);
+					t.Owner = nameof(TrueLayerAPI);
+                    transactions.Add(t);
                 }
                 catch (Exception e)
                 {

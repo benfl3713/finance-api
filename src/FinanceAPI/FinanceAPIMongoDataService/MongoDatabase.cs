@@ -38,7 +38,7 @@ namespace FinanceAPIMongoDataService
 			{
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq("ID", id);
-				return collection.Find(filter).First();
+				return collection.Find(filter).FirstOrDefault();
 			}
 			catch (Exception ex)
 			{
