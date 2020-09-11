@@ -12,11 +12,15 @@ namespace FinanceAPIData.Tasks
 {
 	public class AccountRefresh : BaseTask
     {
-        private IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
-        private IAccountDataService _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService();
-        private ITransactionsDataService _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService();
+        private IDatafeedDataService _datafeedDataService;
+        private IAccountDataService _accountDataService;
+        private ITransactionsDataService _transactionDataService;
         public override void Execute(Dictionary<string, object> args, TaskSettings settings)
         {
+            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(settings.MongoDB_ConnectionString);
+            _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(settings.MongoDB_ConnectionString);
+            _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(settings.MongoDB_ConnectionString);
+
             if (string.IsNullOrEmpty(args["AccountID"].ToString()))
             {
                 base.Execute(args, settings);
@@ -30,14 +34,38 @@ namespace FinanceAPIData.Tasks
                 return;
             }
 
-            ExternalAccount externalAccount =  _datafeedDataService.GetExternalAccounts(Task.ClientID, accountID).FirstOrDefault();
-            string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
+            List<ExternalAccount> externalAccounts =  _datafeedDataService.GetExternalAccounts(Task.ClientID, accountID);
             Account account = _accountDataService.GetAccountById(accountID, Task.ClientID);
-            IDatafeedAPI datafeedApi = new TrueLayerAPI(settings.TrueLayer_ClientID, settings.TrueLayer_ClientSecret);
+            IDatafeedAPI datafeedApi = new TrueLayerAPI(settings.MongoDB_ConnectionString, settings.TrueLayer_ClientID, settings.TrueLayer_ClientSecret, settings.TrueLayer_Mode);
 
-            if (string.IsNullOrEmpty(externalAccount?.AccountID) || string.IsNullOrEmpty(encryptedAccessKey) || account == null || datafeedApi == null)
-            {
+            if(account == null || externalAccounts.Count == 0)
+			{
+                base.Execute(args, settings);
                 return;
+            }
+
+            decimal totalAccountBalance = 0;
+
+			foreach (var externalAccount in externalAccounts)
+			{
+                totalAccountBalance += ProcessExternalAccount(externalAccount, datafeedApi, account);
+			}
+
+            // Reload account to get new balance
+            account = _accountDataService.GetAccountById(accountID, Task.ClientID);
+
+            BalanceAccount(account, totalAccountBalance);
+
+            base.Execute(args, settings);
+        }
+
+        private decimal ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account)
+		{
+            string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
+
+            if (string.IsNullOrEmpty(externalAccount?.AccountID) || string.IsNullOrEmpty(encryptedAccessKey) || datafeedApi == null)
+            {
+                return 0;
             }
 
             List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance);
@@ -60,7 +88,7 @@ namespace FinanceAPIData.Tasks
             foreach (var transaction in transactions)
             {
                 transaction.ClientID = Task.ClientID;
-                transaction.AccountID = accountID;
+                transaction.AccountID = account.ID;
                 transaction.AccountName = account?.AccountName ?? "Unknown";
                 if (sortedTransactions.Where(t => t.ID == transaction.ID).Count() == 0)
                     sortedTransactions.Add(transaction);
@@ -73,15 +101,10 @@ namespace FinanceAPIData.Tasks
             //Add All sorted transactions
             foreach (Transaction transaction in sortedTransactions)
             {
-				bool? imported = _transactionDataService.ImportDatafeedTransaction(transaction);
-			}
+                bool? imported = _transactionDataService.ImportDatafeedTransaction(transaction);
+            }
 
-            // Reload account to get new balance
-            account = _accountDataService.GetAccountById(accountID, Task.ClientID);
-
-            BalanceAccount(account, accountBalance);
-
-            base.Execute(args, settings);
+            return accountBalance;
         }
 
         private void BalanceAccount(Account account, decimal accountBalance)

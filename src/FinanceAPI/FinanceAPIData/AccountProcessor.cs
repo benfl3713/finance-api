@@ -8,9 +8,18 @@ namespace FinanceAPIData
 {
 	public class AccountProcessor
 	{
-		IAccountDataService _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService();
-		ITransactionsDataService _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService();
-		IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
+		IAccountDataService _accountDataService;
+		ITransactionsDataService _transactionDataService;
+		IDatafeedDataService _datafeedDataService;
+		string _connectionString;
+
+		public AccountProcessor(string connectionString)
+		{
+			_connectionString = connectionString;
+			_accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(_connectionString);
+			_transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(_connectionString);
+			_datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_connectionString);
+		}
 		public string InsertAccount(Account account)
 		{
 			// Force account id to be empty

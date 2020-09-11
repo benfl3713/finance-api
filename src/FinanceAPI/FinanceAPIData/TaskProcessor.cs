@@ -9,12 +9,19 @@ namespace FinanceAPIData
 {
 	public class TaskProcessor
 	{
-		ITaskDataService _taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService();
+		ITaskDataService _taskDataService;
+		string _connectionString;
+
+		public TaskProcessor(string connectionString)
+		{
+			_connectionString = connectionString;
+			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(_connectionString);
+		}
 
 		public bool RefreshAccount(string clientId, string accountId)
 		{
 			// Check if client owns account
-			Account account = new AccountProcessor().GetAccountById(accountId, clientId);
+			Account account = new AccountProcessor(_connectionString).GetAccountById(accountId, clientId);
 			if (account == null)
 				return false;
 

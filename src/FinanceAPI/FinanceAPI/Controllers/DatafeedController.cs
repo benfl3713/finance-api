@@ -43,6 +43,8 @@ namespace FinanceAPI.Controllers
 				{
 					trueLayerAPI._ClientId = _appSettings.TrueLayer_ClientID;
 					trueLayerAPI._Secret = _appSettings.TrueLayer_ClientSecret;
+					trueLayerAPI.SetMode(_appSettings.TrueLayer_Mode);
+					trueLayerAPI._datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_appSettings.MongoDB_ConnectionString);
 				}
 				accounts.AddRange(datafeedApi.GetExternalAccounts(clientId, datafeed.AccessKey, datafeed.VendorID, datafeed.VendorName, datafeed.Provider));
 			}
@@ -55,6 +57,13 @@ namespace FinanceAPI.Controllers
 			}
 
 			return Json(accounts);
+		}
+
+		[HttpGet("[action]")]
+		public IActionResult GetMappedExternalAccounts(string accountId = null)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_datafeedProcessor.GetExternalAccounts(clientId, accountId));
 		}
 
 		[HttpPost("[action]")]

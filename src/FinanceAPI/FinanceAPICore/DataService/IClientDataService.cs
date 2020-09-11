@@ -11,5 +11,6 @@ namespace FinanceAPICore.DataService
 		bool UpdateClient(Client client);
 		bool DeleteClient(string clientId);
 		Client GetClientByUsername(string username);
+		List<Client> GetAllClients();
 	}
 }

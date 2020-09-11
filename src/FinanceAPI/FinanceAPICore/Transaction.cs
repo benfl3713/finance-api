@@ -49,17 +49,6 @@ namespace FinanceAPICore
             Logo = logo;
         }
 
-        private void CalculateLogo()
-        {
-            if (string.IsNullOrEmpty(Logo))
-            {
-                if(!string.IsNullOrEmpty(Vendor))
-                    Logo = $"https://logo.clearbit.com/{Vendor.Replace("'", "").Replace(" ", "").Replace(",", "")}.com";
-                else if (!string.IsNullOrEmpty(Merchant))
-                    Logo = $"https://logo.clearbit.com/{Merchant.Replace("'", "").Replace(" ", "").Replace(",", "")}.com";
-            }
-        }
-
         public static Transaction CreateFromJson(JObject jTransaction, string clientId)
         {
             Transaction transaction = new Transaction();

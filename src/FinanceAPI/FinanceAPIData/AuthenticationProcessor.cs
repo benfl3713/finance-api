@@ -9,7 +9,14 @@ namespace FinanceAPIData
 {
 	public class AuthenticationProcessor
 	{
-		IClientDataService _clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService();
+		IClientDataService _clientDataService;
+		string _connectionString;
+
+		public AuthenticationProcessor(string connectionString)
+		{
+			_connectionString = connectionString;
+			_clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_connectionString);
+		}
 		public Client AuthenticateClient(string username, string password)
 		{
 			Client client = _clientDataService.GetClientByUsername(username);

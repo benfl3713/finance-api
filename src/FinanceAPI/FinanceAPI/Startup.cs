@@ -41,11 +41,15 @@ namespace FinanceAPI
 			{
 				settings.TrueLayer_ClientID = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientID));
 				settings.TrueLayer_ClientSecret = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientSecret));
+				settings.TrueLayer_Mode = Configuration.GetValue<string>(nameof(settings.TrueLayer_Mode));
+				settings.MongoDB_ConnectionString = Configuration.GetValue<string>(nameof(settings.MongoDB_ConnectionString)) ?? "mongodb://localhost";
 			});
 
 			AddProcessors(services);
 			services.AddTransient<JwtMiddleware>();
-			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>()));
+			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides, true));
+			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<TransactionLogoCalculator>()));
+			
 
 			services.AddCors(options =>
 			{
@@ -83,16 +87,18 @@ namespace FinanceAPI
 				SetupElectron(env);
 
 			app.ApplicationServices.GetService<TaskPoller>();
+			if(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.UseTransactionCalculator)
+				app.ApplicationServices.GetService<TransactionLogoCalculator>();
 		}
 
 		private void AddProcessors(IServiceCollection services)
 		{
-			services.AddTransient<ClientProcessor>();
-			services.AddTransient<AccountProcessor>();
-			services.AddTransient<TransactionProcessor>();
-			services.AddTransient<AuthenticationProcessor>();
-			services.AddTransient<DatafeedProcessor>();
-			services.AddTransient<TaskProcessor>();
+			services.AddTransient(x => new ClientProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new AccountProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new TransactionProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new AuthenticationProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new DatafeedProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)

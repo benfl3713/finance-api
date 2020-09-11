@@ -9,7 +9,14 @@ namespace FinanceAPIData
 {
 	public class DatafeedProcessor
 	{
-		IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
+		IDatafeedDataService _datafeedDataService;
+		string _connectionString;
+
+		public DatafeedProcessor(string connectionString)
+		{
+			_connectionString = connectionString;
+			_datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_connectionString);
+		}
 		public List<Datafeed> GetDatafeeds(string clientId, string datafeedType = null)
 		{
 			List<Datafeed> datafeeds = _datafeedDataService.GetDatafeeds(clientId);
@@ -23,7 +30,7 @@ namespace FinanceAPIData
 		{
 			if (string.IsNullOrEmpty(datafeed) || string.IsNullOrEmpty(vendorID) || string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountID))
 				return false;
-			var account = new AccountProcessor().GetAccountById(accountID, clientId);
+			var account = new AccountProcessor(_connectionString).GetAccountById(accountID, clientId);
 			if (account == null)
 				return false;
 
@@ -35,7 +42,7 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountId))
 				return false;
 
-			var account = new AccountProcessor().GetAccountById(accountID, clientId);
+			var account = new AccountProcessor(_connectionString).GetAccountById(accountID, clientId);
 			if (account == null)
 				return false;
 

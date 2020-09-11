@@ -12,10 +12,16 @@ namespace FinanceAPIMongoDataService.DataService
 		static string databaseName = "finance";
 		static string datafeedTableName = "datafeeds";
 		static string externalAccountMappingsTable = "datafeed_account_mappings";
+		string connectionString;
+
+		public DatafeedDataService(string connectionString)
+		{
+			this.connectionString = connectionString;
+		}
 
 		public bool AddAccountDatafeedMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var record = new
 			{
 				_id = $"{accountID}_{externalAccountID}",
@@ -30,7 +36,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool RemoveAccountDatafeedMapping(string clientId, string accountID, string externalAccountID)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId);
 
 			return database.DeleteRecord(externalAccountMappingsTable, $"{accountID}_{externalAccountID}", filter, "_id");
@@ -38,13 +44,13 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool AddUpdateClientDatafeed(Datafeed datafeed)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			return database.UpsertRecord(datafeedTableName, datafeed, datafeed._id);
 		}
 
 		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var clientFilter = Builders<Datafeed>.Filter.Eq("ClientId", clientId);
 			var filter = Builders<Datafeed>.Filter.Eq("datafeed", provider) & Builders<Datafeed>.Filter.Eq("vendorID", vendorID);
 
@@ -55,14 +61,14 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public List<Datafeed> GetDatafeeds(string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Datafeed>.Filter.Eq("ClientId", clientId);
 			return database.LoadRecordsByFilter(datafeedTableName, filter);
 		}
 
 		public List<ExternalAccount> GetExternalAccounts(string clientId, string accountId = null)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId);
 			if(!string.IsNullOrEmpty(accountId))
 				filter &= Builders<dynamic>.Filter.Eq("accountId", accountId);
@@ -76,7 +82,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public string GetRefreshTokenByAccessKey(string encryptedAccesskey)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Datafeed>.Filter.Eq("AccessKey", encryptedAccesskey);
 			var datafeeds = database.LoadRecordsByFilter(datafeedTableName, filter);
 			if (datafeeds != null && datafeeds.Count > 0)
@@ -87,7 +93,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool IsExternalAccountMapped(string clientId, string externalAccountID, string vendorID, out string mappedAccount)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var accountFilter = Builders<dynamic>.Filter.Eq("externalId", externalAccountID);
 			var vendorFilter = Builders<dynamic>.Filter.Eq("vendorID", vendorID);
 			var clientFilter = Builders<dynamic>.Filter.Eq("clientId", clientId);
@@ -105,7 +111,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool UpdateAccessKey(string newAccessKey, string newRefreshToken, string oldAccessKey, DateTime lastUpdated)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var update = Builders<Datafeed>.Update.Set(d => d.AccessKey, newAccessKey);
 			update = update.Set(d => d.RefreshKey, newRefreshToken);
 
@@ -116,7 +122,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public string GetAccessKeyForExternalAccount(string provider, string vendorId,  string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Datafeed>.Filter.Eq(d => d.Provider, provider) &
 						Builders<Datafeed>.Filter.Eq(d => d.VendorID, vendorId) &
 						Builders<Datafeed>.Filter.Eq(d => d.ClientId, clientId);
@@ -129,7 +135,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool RemoveAllAccountDatafeedMappings(string clientId, string accountID)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId) & Builders<dynamic>.Filter.Eq("accountId", accountID);
 
 			return database.DeleteManyRecords(externalAccountMappingsTable, filter);

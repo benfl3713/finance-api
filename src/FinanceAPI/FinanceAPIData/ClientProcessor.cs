@@ -6,7 +6,14 @@ namespace FinanceAPIData
 {
 	public class ClientProcessor
 	{
-		IClientDataService _clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService();
+		IClientDataService _clientDataService;
+		string _connectionString;
+
+		public ClientProcessor(string connectionString)
+		{
+			_connectionString = connectionString;
+			_clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_connectionString);
+		}
 		public string InsertClient(Client client)
 		{
 			// Force client id to be empty

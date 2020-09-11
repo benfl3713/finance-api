@@ -12,24 +12,30 @@ namespace FinanceAPIMongoDataService.DataService
 	{
 		public static string databaseName = "finance";
 		public static string tableName = "transactions";
+		string connectionString;
+
+		public TransactionsDataService(string connectionString)
+		{
+			this.connectionString = connectionString;
+		}
 
 		public bool DeleteAllAccountTransactions(string accountId, string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Transaction>.Filter.Eq(t => t.ClientID, clientId) & Builders<Transaction>.Filter.Eq(t => t.AccountID, accountId);
 			return database.DeleteManyRecords(tableName, filter);
 		}
 
 		public bool DeleteTransaction(string transactionId, string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
 			return database.DeleteRecord<Transaction>(tableName, transactionId, filter);
 		}
 
 		public Transaction GetTransactionById(string transactionId, string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var transaction = database.LoadRecordById<Transaction>(tableName, transactionId);
 			if (transaction != null && transaction.ClientID == clientId)
 				return transaction;
@@ -39,7 +45,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public List<Transaction> GetTransactions(string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
 			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
 		}
@@ -59,15 +65,24 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public bool InsertTransaction(Transaction transaction)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			return database.InsertRecord(tableName, transaction);
 		}
 
 		public bool UpdateTransaction(Transaction transaction)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName);
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", transaction.ClientID);
 			return database.UpdateRecord(tableName, transaction, transaction.ID, filter);
+		}
+
+		public bool UpdateTransactionLogo(string transactionId, string logo)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			var update = Builders<Transaction>.Update.Set(t => t.Logo, logo);
+			var filter = Builders<Transaction>.Filter.Eq(t => t.ID, transactionId);
+
+			return database.PartialUpdateRecord(tableName, update, filter);
 		}
 	}
 }

@@ -15,16 +15,32 @@ namespace FinanceAPIData.Datafeeds.APIs
         public string _Secret { private get; set; } = string.Empty;
         private string _AuthUrl = "https://auth.truelayer-sandbox.com";
         private string _ApiUrl = "https://api.truelayer-sandbox.com";
-        private IDatafeedDataService _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService();
-        private string datafeedName = "TRUELAYER";
+        public IDatafeedDataService _datafeedDataService;
+		private string datafeedName = "TRUELAYER";
 
-
-		public TrueLayerAPI() {}
-		public TrueLayerAPI(string clientId, string clientSecret)
+		public TrueLayerAPI(){}
+		public TrueLayerAPI(string connectionString, string clientId, string clientSecret, string mode)
 		{
+            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(connectionString);
             _ClientId = clientId;
             _Secret = clientSecret;
+
+            SetMode(mode);
 		}
+
+        public void SetMode(string mode)
+		{
+            if (mode == "Live")
+            {
+                _AuthUrl = "https://auth.truelayer.com";
+                _ApiUrl = "https://api.truelayer.com";
+            }
+			else
+			{
+                _AuthUrl = "https://auth.truelayer-sandbox.com";
+                _ApiUrl = "https://api.truelayer-sandbox.com";
+            }
+        }
 
         public bool RegisterNewClient(string publicToken, string clientId, string requestUrl)
         {

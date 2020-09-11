@@ -9,10 +9,18 @@ namespace FinanceAPIData.TaskManagment
 {
 	public class TaskFactory
 	{
-		private ITaskDataService _taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService();
+		private ITaskDataService _taskDataService;
+		private TransactionLogoCalculator _transactionLogoCalculator;
+
+		public TaskFactory(TransactionLogoCalculator transactionLogoCalculator)
+		{
+			_transactionLogoCalculator = transactionLogoCalculator;
+		}
 
 		public void StartTask(Task task, TaskSettings taskSettings)
 		{
+			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(taskSettings.MongoDB_ConnectionString);
+
 			if (!_taskDataService.AllocateTask(task.ID))
 				return;
 
@@ -33,6 +41,9 @@ namespace FinanceAPIData.TaskManagment
 		{
 			//Remove From Queue
 			_taskDataService.RemoveTask((sender as ITask).Task.ID);
+
+			if (sender is AccountRefresh)
+				_transactionLogoCalculator.Run((sender as ITask).Task.ClientID, (sender as ITask).Task.Data["AccountID"].ToString());
 		}
 
 		private ITask GetInstance(TaskType taskType)

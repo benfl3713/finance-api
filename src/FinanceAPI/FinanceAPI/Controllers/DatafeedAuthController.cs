@@ -56,7 +56,7 @@ namespace FinanceAPI.Controllers
                 if (clientId == null)
                     return "Invalid User";
 
-                TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret);
+                TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.MongoDB_ConnectionString, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
                 return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
 
             }

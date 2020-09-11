@@ -11,7 +11,7 @@ namespace FinanceAPIMongoDataService
 	internal class MongoDatabase
 	{
 		private IMongoDatabase db;
-		public MongoDatabase(string database, string connectionString = "mongodb://bendrive")
+		public MongoDatabase(string database, string connectionString)
 		{
 			var client = new MongoClient(connectionString);
 			db = client.GetDatabase(database);
@@ -52,6 +52,8 @@ namespace FinanceAPIMongoDataService
 			try
 			{
 				var collection = db.GetCollection<T>(table);
+				if (filter == null)
+					return collection.Find(Builders<T>.Filter.Empty).ToList();
 				return collection.Find(filter).ToList();
 			}
 			catch (Exception ex)

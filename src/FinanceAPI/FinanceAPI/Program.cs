@@ -26,9 +26,9 @@ namespace FinanceAPI
 					webBuilder.UseStartup<Startup>();
 				}).
 			ConfigureAppConfiguration(configurationBuilder => {
-				configurationBuilder.AddEnvironmentVariables();
 				if (System.IO.File.Exists("user.appsettings.json"))
 					configurationBuilder.AddJsonFile("user.appsettings.json");
+				configurationBuilder.AddEnvironmentVariables();
 			});
 	}
 }
