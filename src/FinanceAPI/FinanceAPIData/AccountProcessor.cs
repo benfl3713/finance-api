@@ -47,8 +47,8 @@ namespace FinanceAPIData
 		{
 			if (!string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
 			{
-				if (!_transactionDataService.DeleteAllAccountTransactions(accountId, clientId) 
-					|| !_datafeedDataService.RemoveAllAccountDatafeedMappings(clientId, accountId))
+				_datafeedDataService.RemoveAllAccountDatafeedMappings(clientId, accountId);
+				if (!_transactionDataService.DeleteAllAccountTransactions(accountId, clientId))
 					return false;
 				return _accountDataService.DeleteAccount(accountId, clientId);
 			}

@@ -39,12 +39,16 @@ namespace FinanceAPIData
 		}
 
 		/// <summary>
-		/// Runs every 30 minutes
+		/// Runs every 15 minutes
 		/// </summary>
 		private void IntervalRunner()
 		{
-			Run();
-			System.Threading.Thread.Sleep(180000);
+			System.Threading.Thread.Sleep(5000);
+			while (true)
+			{
+				Run();
+				System.Threading.Thread.Sleep(90000);
+			}
 		}
 
 		public void Run(string clientId = null, string accountId = null)
@@ -74,14 +78,17 @@ namespace FinanceAPIData
 			if (!string.IsNullOrEmpty(transaction.Logo))
 				return;
 
-			foreach(var lo in _logoOverrides.Where(l => l.Value.ForceOverride == true))
+			if (_logoOverrides != null)
 			{
-				if ((lo.Value.Types.Contains("Vendor") && lo.Key.Like(transaction.Vendor))
-					|| (lo.Value.Types.Contains("Merchant") && lo.Key.Like(transaction.Merchant))
-					|| (lo.Value.Types.Contains("Type") && lo.Key.Like(transaction.Type)))
+				foreach (var lo in _logoOverrides.Where(l => l.Value.ForceOverride == true))
 				{
-					transaction.Logo = lo.Value.Url;
-					return;
+					if ((lo.Value.Types.Contains("Vendor") && lo.Key.Like(transaction.Vendor))
+						|| (lo.Value.Types.Contains("Merchant") && lo.Key.Like(transaction.Merchant))
+						|| (lo.Value.Types.Contains("Type") && lo.Key.Like(transaction.Type)))
+					{
+						transaction.Logo = lo.Value.Url;
+						return;
+					}
 				}
 			}
 
@@ -106,15 +113,18 @@ namespace FinanceAPIData
 			}
 
 
-			// Runs overrides again but without the force override requirement
-			foreach (var lo in _logoOverrides)
+			if (_logoOverrides != null)
 			{
-				if ((lo.Value.Types.Contains("Vendor") && lo.Key.Like(transaction.Vendor))
-					|| (lo.Value.Types.Contains("Merchant") && lo.Key.Like(transaction.Merchant))
-					|| (lo.Value.Types.Contains("Type") && lo.Key.Like(transaction.Type)))
+				// Runs overrides again but without the force override requirement
+				foreach (var lo in _logoOverrides)
 				{
-					transaction.Logo = lo.Value.Url;
-					return;
+					if ((lo.Value.Types.Contains("Vendor") && lo.Key.Like(transaction.Vendor))
+						|| (lo.Value.Types.Contains("Merchant") && lo.Key.Like(transaction.Merchant))
+						|| (lo.Value.Types.Contains("Type") && lo.Key.Like(transaction.Type)))
+					{
+						transaction.Logo = lo.Value.Url;
+						return;
+					}
 				}
 			}
 
@@ -148,6 +158,9 @@ namespace FinanceAPIData
 	{
 		public static bool Like(this string toSearch, string toFind)
 		{
+			if (string.IsNullOrEmpty(toSearch) || string.IsNullOrEmpty(toFind))
+				return false;
+
 			return new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\").Replace(toFind, ch => @"\" + ch).Replace('_', '.').Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(toSearch);
 		}
 	}

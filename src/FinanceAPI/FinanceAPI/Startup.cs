@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace FinanceAPI
 {
@@ -34,6 +35,10 @@ namespace FinanceAPI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			//var logoOverridesJson = Configuration.GetValue<string>("LogoOverrides");
+			//if (logoOverridesJson != null)
+			//	services.Configure<AppSettings>(Configuration).Add(new ServiceDescriptor(typeof(Dictionary<string, string>), JsonConvert.DeserializeObject<Dictionary<string, string>>(logoOverridesJson)));
+
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
 			services.Configure<AppSettings>(Configuration);
 			services.Configure<TaskSettings>(Configuration.GetSection("TaskSettings"));
