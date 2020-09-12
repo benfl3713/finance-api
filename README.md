@@ -1,5 +1,9 @@
 # Finance API
-Personal Finance Manager API
+![](https://github.com/benfl3713/finance-api/workflows/Pipeline/badge.svg?branch=master)  
+
+**Personal Finance Manager API**
+
+This api is used by this front end finance manager https://github.com/benfl3713/finance-manager
 
 # Purpose
 This api provides a backend for a personal finance manager.  Including a JWT authentication system for clients
