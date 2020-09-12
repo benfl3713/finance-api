@@ -1,6 +1,8 @@
 # Finance API
 Personal Finance Manager API
 
+This api is used by this front end finance manager https://github.com/benfl3713/finance-manager
+
 # Purpose
 This api provides a backend for a personal finance manager.  Including a JWT authentication system for clients
 It will allow you do CRUD operations on:
