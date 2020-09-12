@@ -45,11 +45,13 @@ namespace FinanceAPIData.Tasks
             }
 
             decimal totalAccountBalance = 0;
+            decimal totalAvailableAccountBalance = 0;
 
-			foreach (var externalAccount in externalAccounts)
+            foreach (var externalAccount in externalAccounts)
 			{
-                totalAccountBalance += ProcessExternalAccount(externalAccount, datafeedApi, account);
-			}
+                totalAccountBalance += ProcessExternalAccount(externalAccount, datafeedApi, account, out decimal availableBalance);
+                totalAvailableAccountBalance += availableBalance;
+            }
 
             // Reload account to get new balance
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
@@ -59,30 +61,18 @@ namespace FinanceAPIData.Tasks
             base.Execute(args, settings);
         }
 
-        private decimal ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account)
+        private decimal ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance)
 		{
             string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
+            availableBalance = 0;
 
             if (string.IsNullOrEmpty(externalAccount?.AccountID) || string.IsNullOrEmpty(encryptedAccessKey) || datafeedApi == null)
             {
                 return 0;
             }
 
-            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance);
+            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance, out availableBalance);
             Console.WriteLine($"Fetched [{transactions.Count}] transactions from provider");
-
-            if (externalAccount.Provider == "PLAID" && transactions.Count == 500)
-            {
-                int lastCount = 500;
-                for (int i = 1; i < 51; i++)
-                {
-                    transactions.AddRange(datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal _, null, DateTime.Now.AddMonths(-i)));
-                    if (lastCount + 500 != transactions.Count)
-                        break;
-
-                    lastCount += 500;
-                }
-            }
 
             List<Transaction> sortedTransactions = new List<Transaction>();
             foreach (var transaction in transactions)

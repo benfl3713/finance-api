@@ -39,7 +39,7 @@ namespace FinanceAPIData
 		}
 
 		/// <summary>
-		/// Runs every 15 minutes
+		/// Runs every 30 minutes
 		/// </summary>
 		private void IntervalRunner()
 		{
@@ -47,7 +47,7 @@ namespace FinanceAPIData
 			while (true)
 			{
 				Run();
-				System.Threading.Thread.Sleep(90000);
+				System.Threading.Thread.Sleep(180000);
 			}
 		}
 
