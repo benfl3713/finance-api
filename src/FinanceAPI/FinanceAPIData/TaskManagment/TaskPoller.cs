@@ -11,7 +11,7 @@ namespace FinanceAPIData.TaskManagment
 	public class TaskPoller
 	{
 		private TaskSettings _taskSettings;
-		private bool IsCanceled;
+		private bool _isCanceled;
 		private ITaskDataService _taskDataService;
 		private TaskFactory taskFactory;
 
@@ -28,7 +28,7 @@ namespace FinanceAPIData.TaskManagment
 
 		public void Start()
 		{
-			while (!IsCanceled)
+			while (!_isCanceled)
 			{
 				//Do Poll
 				List<Task> queue = _taskDataService.GetAllUnAllocatedTasks();
@@ -43,7 +43,7 @@ namespace FinanceAPIData.TaskManagment
 
 		public void Stop()
 		{
-			IsCanceled = true;
+			_isCanceled = true;
 		}
 	}
 }

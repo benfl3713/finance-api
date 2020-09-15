@@ -28,7 +28,7 @@ namespace FinanceAPIData.Tasks
             }
 
             string accountID = args["AccountID"].ToString();
-            if (_accountDataService.GetAccounts(Task.ClientID).Where(a => a.ID == accountID).Count() == 0)
+            if (!_accountDataService.GetAccounts(Task.ClientID).Any(a => a.ID == accountID))
             {
                 base.Execute(args, settings);
                 return;

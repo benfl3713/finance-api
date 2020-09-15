@@ -32,15 +32,24 @@ namespace FinanceAPIData.TaskManagment
 
 			taskInstance.Completed += Complete;
 
-			// Executes task in the background
-			System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() => taskInstance.Execute(task.Data, taskSettings));
-			threadedTask.Start();
+			Console.WriteLine($"Starting task: {task.Name}");
+
+			try
+			{
+				// Executes task in the background
+				System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() => taskInstance.Execute(task.Data, taskSettings));
+				threadedTask.Start();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
 		private void Complete(object sender, EventArgs args)
 		{
 			//Remove From Queue
-			_taskDataService.RemoveTask((sender as ITask).Task.ID);
+			_taskDataService.RemoveTask((sender as ITask)?.Task.ID);
 
 			if (sender is AccountRefresh)
 				_transactionLogoCalculator.Run((sender as ITask).Task.ClientID, (sender as ITask).Task.Data["AccountID"].ToString());
