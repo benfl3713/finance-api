@@ -46,14 +46,15 @@ namespace FinanceAPIData
 			System.Threading.Thread.Sleep(5000);
 			while (true)
 			{
+				Serilog.Log.Logger?.Information("Running Logo Calculator");
 				Run();
-				System.Threading.Thread.Sleep(180000);
+				Serilog.Log.Logger?.Information("Logo Calculator Complete Successfully");
+				System.Threading.Thread.Sleep(60 * 60000);
 			}
 		}
 
 		public void Run(string clientId = null, string accountId = null)
 		{
-			Serilog.Log.Logger?.Information("Running Logo Calculator");
 			try
 			{
 				foreach (Client client in _clientDataService.GetAllClients())
@@ -65,7 +66,6 @@ namespace FinanceAPIData
 					Parallel.ForEach(transactions, t => CalculateLogo(t));
 					transactions.Where(t => !string.IsNullOrEmpty(t.Logo)).ToList().ForEach(t => _transactionsDataService.UpdateTransactionLogo(t.ID, t.Logo));
 				}
-				Serilog.Log.Logger?.Information("Logo Calculator Complete Successfully");
 			}
 			catch (Exception ex)
 			{

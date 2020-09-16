@@ -64,5 +64,12 @@ namespace FinanceAPI.Controllers
 				return Json("Account Deleted");
 			return BadRequest("Failed to delete Account");
 		}
+
+		[HttpGet("{accountId}/[action]")]
+		public IActionResult GetSpentThisWeek([FromRoute(Name = "accountId")] [Required] string accountId)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_accountProcessor.GetSpentThisWeek(accountId, clientId));
+		}
 	}
 }

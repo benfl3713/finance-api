@@ -2,7 +2,9 @@
 using FinanceAPICore.DataService;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using FinanceAPICore.Extensions;
 
 namespace FinanceAPIData
 {
@@ -70,6 +72,21 @@ namespace FinanceAPIData
 
 			Account account =  _accountDataService.GetAccountById(accountId, clientId);
 			return account?.AccountName;
+		}
+
+		public decimal? GetSpentThisWeek(string accountId, string clientId)
+		{
+			Account account = _accountDataService.GetAccountById(accountId, clientId);
+			if (account == null)
+				throw new Exception("Cannot find account");
+
+			DateTime dateFrom = DateTime.UtcNow.StartOfWeek(DayOfWeek.Sunday).Date;
+			
+			return _transactionDataService.GetTransactions(clientId).Where(t => t.AccountID == accountId 
+				&& t.Date.Date >= dateFrom.Date
+				&& t.Amount < 0)
+				.Sum(t => t.Amount)
+				* -1;
 		}
 	}
 }

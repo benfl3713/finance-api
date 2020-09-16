@@ -20,7 +20,7 @@ namespace FinanceAPIData.Tasks
 		protected void Log(string message, LogEventLevel eventLevel = LogEventLevel.Information)
 		{
 			var logger = Serilog.Log.Logger;
-			logger?.Write(eventLevel, message);
+			logger?.Write(eventLevel, "[{Task}] " + message, Task.Name);
 		}
 	}
 }
