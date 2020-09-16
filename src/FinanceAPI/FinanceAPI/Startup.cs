@@ -20,6 +20,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Serilog;
+using Serilog.Events;
 
 namespace FinanceAPI
 {
@@ -35,10 +37,6 @@ namespace FinanceAPI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			//var logoOverridesJson = Configuration.GetValue<string>("LogoOverrides");
-			//if (logoOverridesJson != null)
-			//	services.Configure<AppSettings>(Configuration).Add(new ServiceDescriptor(typeof(Dictionary<string, string>), JsonConvert.DeserializeObject<Dictionary<string, string>>(logoOverridesJson)));
-
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
 			services.Configure<AppSettings>(Configuration);
 			services.Configure<TaskSettings>(Configuration.GetSection("TaskSettings"));
@@ -49,12 +47,15 @@ namespace FinanceAPI
 				settings.TrueLayer_Mode = Configuration.GetValue<string>(nameof(settings.TrueLayer_Mode));
 				settings.MongoDB_ConnectionString = Configuration.GetValue<string>(nameof(settings.MongoDB_ConnectionString)) ?? "mongodb://localhost";
 			});
+			
 
+			SetupLogging(services);
+			
 			AddProcessors(services);
 			services.AddTransient<JwtMiddleware>();
 			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides, true));
 			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<TransactionLogoCalculator>()));
-			
+
 
 			services.AddCors(options =>
 			{
@@ -80,6 +81,7 @@ namespace FinanceAPI
 
 			app.UseMiddleware<JwtMiddleware>();
 
+			app.UseExceptionHandlingMiddleware();
 
 			app.UseRouting();
 
@@ -104,6 +106,28 @@ namespace FinanceAPI
 			services.AddTransient(x => new AuthenticationProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new DatafeedProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+		}
+
+		private void SetupLogging(IServiceCollection services)
+		{
+			var sp = services.BuildServiceProvider();
+			var appSettings = sp.GetService<IOptions<AppSettings>>().Value;
+			
+			var loggerConfiguration = new LoggerConfiguration()
+				.MinimumLevel.Information()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Logger(lc => lc
+					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Error)
+					.WriteTo.File("errors.txt"))
+				.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss:fff} [{Level}] {Message}{NewLine}{Exception}");
+
+			if (!string.IsNullOrEmpty(appSettings.MongoDB_ConnectionString))
+				loggerConfiguration.WriteTo.MongoDB($"{appSettings.MongoDB_ConnectionString}/finance", "logs_financeapi", LogEventLevel.Warning);
+
+			loggerConfiguration.ReadFrom.Configuration(Configuration);
+
+			Log.Logger = loggerConfiguration.CreateLogger();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)

@@ -32,7 +32,7 @@ namespace FinanceAPIData
 		public Account GetAccountById(string accountId, string clientId)
 		{
 			if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(clientId))
-				return null;
+				throw new ArgumentException("accountId is required");
 			return _accountDataService.GetAccountById(accountId, clientId);
 		}
 
@@ -69,10 +69,7 @@ namespace FinanceAPIData
 				return null;
 
 			Account account =  _accountDataService.GetAccountById(accountId, clientId);
-			if (account != null)
-				return account.AccountName;
-
-			return null;
+			return account?.AccountName;
 		}
 	}
 }

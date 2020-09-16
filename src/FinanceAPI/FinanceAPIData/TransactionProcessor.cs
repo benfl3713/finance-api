@@ -25,7 +25,7 @@ namespace FinanceAPIData
 				return null;
 
 			if (new AccountProcessor(_connectionString).GetAccountById(transaction.AccountID, transaction.ClientID) == null)
-				return "ERROR:Account Does not exist";
+				throw new Exception("Account does not exist");
 
 			transaction.Owner = "User";
 

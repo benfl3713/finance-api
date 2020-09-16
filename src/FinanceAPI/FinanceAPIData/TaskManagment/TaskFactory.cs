@@ -32,17 +32,20 @@ namespace FinanceAPIData.TaskManagment
 
 			taskInstance.Completed += Complete;
 
-			Console.WriteLine($"Starting task: {task.Name}");
+			Serilog.Log.Logger?.Information($"Starting task: {task.Name}");
 
 			try
 			{
 				// Executes task in the background
-				System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() => taskInstance.Execute(task.Data, taskSettings));
+				System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() =>
+				{
+					taskInstance.Execute(task.Data, taskSettings);
+				});
 				threadedTask.Start();
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+				Serilog.Log.Logger?.Error(ex.Message);
 			}
 		}
 
@@ -51,8 +54,8 @@ namespace FinanceAPIData.TaskManagment
 			//Remove From Queue
 			_taskDataService.RemoveTask((sender as ITask)?.Task.ID);
 
-			if (sender is AccountRefresh)
-				_transactionLogoCalculator.Run((sender as ITask).Task.ClientID, (sender as ITask).Task.Data["AccountID"].ToString());
+			if (sender is AccountRefresh accountRefresh)
+				_transactionLogoCalculator.Run(accountRefresh.Task.ClientID, accountRefresh.Task.Data["AccountID"].ToString());
 		}
 
 		private ITask GetInstance(TaskType taskType)

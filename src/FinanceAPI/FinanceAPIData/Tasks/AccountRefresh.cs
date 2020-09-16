@@ -72,7 +72,7 @@ namespace FinanceAPIData.Tasks
             }
 
             List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance, out availableBalance);
-            Console.WriteLine($"Fetched [{transactions.Count}] transactions from provider");
+            Log($"Fetched [{transactions.Count}] transactions from provider");
 
             List<Transaction> sortedTransactions = new List<Transaction>();
             foreach (var transaction in transactions)
@@ -115,7 +115,7 @@ namespace FinanceAPIData.Tasks
 				Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
                 transaction.ClientID = Task.ClientID;
                 transaction.Owner = nameof(AccountRefresh);
-				Console.WriteLine($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
+				Log($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
                 _transactionDataService.InsertTransaction(transaction);
 			}
 		}

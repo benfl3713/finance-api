@@ -16,6 +16,9 @@ namespace FinanceAPIData
 		}
 		public string InsertClient(Client client)
 		{
+			if (_clientDataService.GetClientByUsername(client.Username) != null)
+				throw new ArgumentException("Username is already taken");
+			
 			// Force client id to be empty
 			client.ID = Guid.NewGuid().ToString();
 			client.Password = FinanceAPICore.Utilities.PasswordHasher.Hash(client.Password);

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Serilog.Events;
 
 namespace FinanceAPIData.Tasks
 {
@@ -12,8 +13,14 @@ namespace FinanceAPIData.Tasks
 
 		public virtual void Execute(Dictionary<string, object> args, TaskSettings settings)
 		{
-			Console.WriteLine($"{Task.Name} has finished");
-			Completed.Invoke(this, new EventArgs());
+			Log($"{Task.Name} has finished");
+			Completed?.Invoke(this, new EventArgs());
+		}
+
+		protected void Log(string message, LogEventLevel eventLevel = LogEventLevel.Information)
+		{
+			var logger = Serilog.Log.Logger;
+			logger?.Write(eventLevel, message);
 		}
 	}
 }
