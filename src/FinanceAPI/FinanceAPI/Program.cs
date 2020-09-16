@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using ElectronNET.API;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace FinanceAPI
 		{
 			try
 			{
-				Log.Information("Starting web host");
+				Console.WriteLine("Starting Up");
 				CreateHostBuilder(args).Build().Run();
 				return 0;
 			}
@@ -40,8 +41,19 @@ namespace FinanceAPI
 					webBuilder.UseStartup<Startup>();
 				})
 				.ConfigureAppConfiguration(configurationBuilder => {
+					Console.WriteLine("Loading Config");
 					if (System.IO.File.Exists("user.appsettings.json"))
 						configurationBuilder.AddJsonFile("user.appsettings.json");
+
+					if (Directory.Exists("config"))
+					{
+						Console.WriteLine("Found config folder. Loading all config files matching pattern: *appsettings.json");
+						foreach (var file in Directory.GetFiles("config", "*appsettings.json"))
+						{
+							configurationBuilder.AddJsonFile(file);
+							Console.WriteLine($"Loaded config from {file}");
+						}
+					}
 					
 					configurationBuilder.AddEnvironmentVariables();
 				});
