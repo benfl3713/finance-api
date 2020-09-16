@@ -115,7 +115,7 @@ namespace FinanceAPI
 			
 			var loggerConfiguration = new LoggerConfiguration()
 				.MinimumLevel.Information()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Verbose)
 				.Enrich.FromLogContext()
 				.WriteTo.Logger(lc => lc
 					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Error)

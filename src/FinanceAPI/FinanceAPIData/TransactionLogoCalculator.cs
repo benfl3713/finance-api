@@ -161,7 +161,15 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(toSearch) || string.IsNullOrEmpty(toFind))
 				return false;
 
-			return new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\").Replace(toFind, ch => @"\" + ch).Replace('_', '.').Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(toSearch);
+			var test = LikeToRegular(toSearch);
+			var isMatch = Regex.IsMatch(toFind, test);
+
+			return Regex.IsMatch(toFind, LikeToRegular(toSearch));
+		}
+
+		private static String LikeToRegular(String value)
+		{
+			return "^" + Regex.Escape(value).Replace("_", ".").Replace("%", ".*") + "$";
 		}
 	}
 }
