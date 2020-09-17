@@ -120,7 +120,10 @@ namespace FinanceAPI
 				.WriteTo.Logger(lc => lc
 					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Error)
 					.WriteTo.File("errors.txt"))
-				.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss:fff} [{Level}] {Message}{NewLine}{Exception}");
+				.WriteTo.Logger(lc => lc
+					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Information)
+					.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss:fff} [{Level}] {Message}{NewLine}{Exception}")
+				);
 
 			if (!string.IsNullOrEmpty(appSettings.MongoDB_ConnectionString))
 				loggerConfiguration.WriteTo.MongoDB($"{appSettings.MongoDB_ConnectionString}/finance", "logs_financeapi", LogEventLevel.Warning);
