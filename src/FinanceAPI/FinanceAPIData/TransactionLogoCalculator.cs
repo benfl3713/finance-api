@@ -100,11 +100,25 @@ namespace FinanceAPIData
 					transaction.Logo = testLogo;
 					return;
 				}
+
+				testLogo = $"https://logo.clearbit.com/{transaction.Vendor.Replace("'", "").Replace(" ", "").Replace(",", "")}.co.uk";
+				if (DoesImageExit(testLogo))
+				{
+					transaction.Logo = testLogo;
+					return;
+				}
 			}
 
 			if (!string.IsNullOrEmpty(transaction.Merchant))
 			{
 				var testLogo = $"https://logo.clearbit.com/{transaction.Merchant.Replace("'", "").Replace(" ", "").Replace(",", "")}.com";
+				if (DoesImageExit(testLogo))
+				{
+					transaction.Logo = testLogo;
+					return;
+				}
+
+				testLogo = $"https://logo.clearbit.com/{transaction.Merchant.Replace("'", "").Replace(" ", "").Replace(",", "")}.co.uk";
 				if (DoesImageExit(testLogo))
 				{
 					transaction.Logo = testLogo;
