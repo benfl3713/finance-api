@@ -192,6 +192,14 @@ namespace FinanceAPIData.Datafeeds.APIs
                 if (objContent["results"] != null)
                     DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions);
 
+                foreach (Transaction transaction in transactions)
+                {
+                    transaction.Status = Status.PENDING;
+                    
+                    if (string.IsNullOrEmpty(transaction.Vendor) && !string.IsNullOrEmpty(transaction.Merchant))
+                        transaction.Vendor = transaction.Merchant;
+                }
+
                 transactions.ForEach(t => t.Status = Status.PENDING);
             }
             catch (Exception e)
@@ -214,16 +222,18 @@ namespace FinanceAPIData.Datafeeds.APIs
                     string transactionID = transaction["transaction_id"];
                     decimal.TryParse(transaction["amount"].ToString() ?? "0", out decimal amount);
                     DateTime.TryParse(transaction["timestamp"].ToString(), out DateTime date);
-                    string category = ((string)transaction["transaction_category"]).ToTitleCase();
+                    string category = ((string)transaction["transaction_category"])?.ToTitleCase();
                     string type = category;
                     if ((transaction["transaction_classification"]).Count > 0 && !string.IsNullOrEmpty((transaction["transaction_classification"])[0].ToString()))
                         category = (transaction["transaction_classification"])[0].ToString();
-                    string vendor = ((string)transaction["merchant_name"]).ToTitleCase();
+                    string vendor = ((string)transaction["merchant_name"])?.ToTitleCase();
                     if (string.IsNullOrEmpty(vendor))
-                        vendor = ((string)transaction.meta?.provider_merchant_name ?? "").ToTitleCase();
-                    string merchant = ((string)transaction["description"]).ToTitleCase();
+                        vendor = ((string)transaction.meta?.provider_merchant_name ?? "")?.ToTitleCase();
+                    string merchant = ((string)transaction["description"])?.ToTitleCase();
+                    string currency = transaction["currency"];
 					Transaction t = new Transaction(transactionID, date, accountId, category, amount, vendor, merchant, type);
 					t.Owner = nameof(TrueLayerAPI);
+                    t.Currency = currency;
                     transactions.Add(t);
                 }
                 catch (Exception e)

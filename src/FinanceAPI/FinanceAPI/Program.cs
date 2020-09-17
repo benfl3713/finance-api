@@ -22,6 +22,7 @@ namespace FinanceAPI
 			}
 			catch (Exception ex)
 			{
+				Console.WriteLine(ex.Message);
 				Log.Fatal(ex, "Host terminated unexpectedly");
 				return 1;
 			}
