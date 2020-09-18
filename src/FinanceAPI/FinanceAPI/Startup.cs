@@ -10,6 +10,12 @@ using FinanceAPI.Middleware;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
+using Hangfire;
+using Hangfire.Console;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
+using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -50,11 +56,12 @@ namespace FinanceAPI
 			
 
 			SetupLogging(services);
-			
+			SetupHangfire(services);
 			AddProcessors(services);
+			
 			services.AddTransient<JwtMiddleware>();
 			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides, true));
-			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<TransactionLogoCalculator>()));
+			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<IBackgroundJobClient>(), tp.GetRequiredService<TransactionLogoCalculator>()));
 
 
 			services.AddCors(options =>
@@ -96,6 +103,9 @@ namespace FinanceAPI
 			app.ApplicationServices.GetService<TaskPoller>();
 			if(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.UseTransactionCalculator)
 				app.ApplicationServices.GetService<TransactionLogoCalculator>();
+
+			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.EnableHangfireDashboard)
+				app.UseHangfireDashboard();
 		}
 
 		private void AddProcessors(IServiceCollection services)
@@ -105,7 +115,7 @@ namespace FinanceAPI
 			services.AddTransient(x => new TransactionProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new AuthenticationProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new DatafeedProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IBackgroundJobClient>()));
 		}
 
 		private void SetupLogging(IServiceCollection services)
@@ -114,7 +124,6 @@ namespace FinanceAPI
 			var appSettings = sp.GetService<IOptions<AppSettings>>().Value;
 			
 			var loggerConfiguration = new LoggerConfiguration()
-				.MinimumLevel.Information()
 				.MinimumLevel.Override("Microsoft", LogEventLevel.Verbose)
 				.Enrich.FromLogContext()
 				.WriteTo.Logger(lc => lc
@@ -131,6 +140,36 @@ namespace FinanceAPI
 			loggerConfiguration.ReadFrom.Configuration(Configuration);
 
 			Log.Logger = loggerConfiguration.CreateLogger();
+		}
+
+		private void SetupHangfire(IServiceCollection services)
+		{
+			var sp = services.BuildServiceProvider();
+			var appSettings = sp.GetService<IOptions<AppSettings>>().Value;
+			if (string.IsNullOrEmpty(appSettings.MongoDB_ConnectionString))
+				return;
+
+			var storageOptions = new MongoStorageOptions
+			{
+				MigrationOptions = new MongoMigrationOptions
+				{
+					MigrationStrategy = new MigrateMongoMigrationStrategy(),
+					BackupStrategy = new CollectionMongoBackupStrategy()
+				}
+				
+			};
+			
+			// Add Hangfire services.
+			services.AddHangfire(configuration => configuration
+				.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+				.UseSimpleAssemblyNameTypeSerializer()
+				.UseRecommendedSerializerSettings()
+				.UseConsole()
+				.UseMongoStorage(appSettings.MongoDB_ConnectionString + "/finance_hangfire", storageOptions)
+			);
+
+			// Add the processing server as IHostedService
+			services.AddHangfireServer();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)

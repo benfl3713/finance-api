@@ -7,6 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="9.31.2" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.13" />
+    <PackageReference Include="Hangfire.Console" Version="1.4.2" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.13" />
+    <PackageReference Include="Hangfire.Mongo" Version="0.7.12" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />

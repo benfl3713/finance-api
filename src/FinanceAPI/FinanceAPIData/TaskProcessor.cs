@@ -4,17 +4,21 @@ using FinanceAPICore.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using FinanceAPIData.Tasks;
+using Hangfire;
 
 namespace FinanceAPIData
 {
 	public class TaskProcessor
 	{
 		ITaskDataService _taskDataService;
+		private IBackgroundJobClient _backgroundJobs;
 		string _connectionString;
 
-		public TaskProcessor(string connectionString)
+		public TaskProcessor(string connectionString, IBackgroundJobClient backgroundJobs)
 		{
 			_connectionString = connectionString;
+			_backgroundJobs = backgroundJobs;
 			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(_connectionString);
 		}
 
@@ -27,8 +31,11 @@ namespace FinanceAPIData
 
 			Task task = new Task($"Account Refresh [{account.AccountName}]", clientId, TaskType.AccountRefresh);
 			task.Data.Add("AccountID", account.ID);
-
-			return _taskDataService.AddTaskToQueue(task);
+			
+			var args = new Dictionary<string, object> {{"AccountID", account.ID}};
+			_backgroundJobs.Enqueue<AccountRefresh>(t => t.Execute(task));
+			return true;
+			// return _taskDataService.AddTaskToQueue(task);
 		}
 	}
 }

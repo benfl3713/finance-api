@@ -2,16 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Hangfire.Console;
+using Hangfire.Server;
+using Microsoft.Extensions.Options;
 using Serilog.Events;
 
 namespace FinanceAPIData.Tasks
 {
 	public class BaseTask : ITask
 	{
-		public Task Task { get; set; }
+		public BaseTask(IOptions<TaskSettings> settings)
+		{
+			Settings = settings.Value;
+		}
 		public virtual event EventHandler Completed;
+		protected TaskSettings Settings;
 
-		public virtual void Execute(Dictionary<string, object> args, TaskSettings settings)
+		public virtual void Execute(Task Task)
 		{
 			Log($"{Task.Name} has finished");
 			Completed?.Invoke(this, new EventArgs());
@@ -19,8 +26,7 @@ namespace FinanceAPIData.Tasks
 
 		protected void Log(string message, LogEventLevel eventLevel = LogEventLevel.Information)
 		{
-			var logger = Serilog.Log.Logger;
-			logger?.Write(eventLevel, "[{Task}] " + message, Task.Name);
+			Serilog.Log.Logger?.Write(eventLevel, message);
 		}
 	}
 }

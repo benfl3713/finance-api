@@ -7,8 +7,7 @@ namespace FinanceAPIData.Tasks
 {
 	public interface ITask
 	{
-		public void Execute(Dictionary<string, object> args, TaskSettings settings);
+		public void Execute(Task task);
 		event EventHandler Completed;
-		public Task Task { get; set; }
 	}
 }

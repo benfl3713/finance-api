@@ -7,6 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.Server;
+using Microsoft.Extensions.Options;
+using Task = FinanceAPICore.Tasks.Task;
 
 namespace FinanceAPIData.Tasks
 {
@@ -15,32 +19,40 @@ namespace FinanceAPIData.Tasks
         private IDatafeedDataService _datafeedDataService;
         private IAccountDataService _accountDataService;
         private ITransactionsDataService _transactionDataService;
-        public override void Execute(Dictionary<string, object> args, TaskSettings settings)
+        private Task Task;
+
+        public AccountRefresh(IOptions<TaskSettings> taskSettings): base(taskSettings)
         {
-            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(settings.MongoDB_ConnectionString);
-            _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(settings.MongoDB_ConnectionString);
-            _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(settings.MongoDB_ConnectionString);
+        }
+        
+        public override void Execute(Task task)
+        {
+            Task = task;
+            var args = Task.Data;
+            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(Settings.MongoDB_ConnectionString);
+            _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(Settings.MongoDB_ConnectionString);
+            _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(Settings.MongoDB_ConnectionString);
 
             if (string.IsNullOrEmpty(args["AccountID"].ToString()))
             {
-                base.Execute(args, settings);
+                base.Execute(Task);
                 return;
             }
 
             string accountID = args["AccountID"].ToString();
             if (!_accountDataService.GetAccounts(Task.ClientID).Any(a => a.ID == accountID))
             {
-                base.Execute(args, settings);
+                base.Execute(Task);
                 return;
             }
 
             List<ExternalAccount> externalAccounts =  _datafeedDataService.GetExternalAccounts(Task.ClientID, accountID);
             Account account = _accountDataService.GetAccountById(accountID, Task.ClientID);
-            IDatafeedAPI datafeedApi = new TrueLayerAPI(settings.MongoDB_ConnectionString, settings.TrueLayer_ClientID, settings.TrueLayer_ClientSecret, settings.TrueLayer_Mode);
+            IDatafeedAPI datafeedApi = new TrueLayerAPI(Settings.MongoDB_ConnectionString, Settings.TrueLayer_ClientID, Settings.TrueLayer_ClientSecret, Settings.TrueLayer_Mode);
 
             if(account == null || externalAccounts.Count == 0)
 			{
-                base.Execute(args, settings);
+                base.Execute(Task);
                 return;
             }
 
@@ -58,7 +70,7 @@ namespace FinanceAPIData.Tasks
 
             BalanceAccount(account, totalAccountBalance);
 
-            base.Execute(args, settings);
+            base.Execute(Task);
         }
 
         private decimal ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance)

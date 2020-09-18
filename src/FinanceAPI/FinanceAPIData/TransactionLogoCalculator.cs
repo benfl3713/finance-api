@@ -25,33 +25,33 @@ namespace FinanceAPIData
 			_clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_connectionString);
 			_logoOverrides = logoOverrides;
 
-			if (startIntervalRunner)
-				StartIntervalRunner();
+			// if (startIntervalRunner)
+				//StartIntervalRunner();
 		}
 
-		public void StartIntervalRunner()
-		{
-			if (task == null)
-			{
-				task = new System.Threading.Tasks.Task(() => IntervalRunner());
-				task.Start();
-			}
-		}
-
-		/// <summary>
-		/// Runs every 30 minutes
-		/// </summary>
-		private void IntervalRunner()
-		{
-			System.Threading.Thread.Sleep(5000);
-			while (true)
-			{
-				Serilog.Log.Logger?.Information("Running Logo Calculator");
-				Run();
-				Serilog.Log.Logger?.Information("Logo Calculator Complete Successfully");
-				System.Threading.Thread.Sleep(60 * 60000);
-			}
-		}
+		// public void StartIntervalRunner()
+		// {
+		// 	if (task == null)
+		// 	{
+		// 		task = new System.Threading.Tasks.Task(() => IntervalRunner());
+		// 		task.Start();
+		// 	}
+		// }
+		//
+		// /// <summary>
+		// /// Runs every 30 minutes
+		// /// </summary>
+		// private void IntervalRunner()
+		// {
+		// 	System.Threading.Thread.Sleep(5000);
+		// 	while (true)
+		// 	{
+		// 		Serilog.Log.Logger?.Information("Running Logo Calculator");
+		// 		Run();
+		// 		Serilog.Log.Logger?.Information("Logo Calculator Complete Successfully");
+		// 		System.Threading.Thread.Sleep(60 * 60000);
+		// 	}
+		// }
 
 		public void Run(string clientId = null, string accountId = null)
 		{

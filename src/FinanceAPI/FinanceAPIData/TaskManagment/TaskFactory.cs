@@ -4,6 +4,8 @@ using FinanceAPIData.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Hangfire;
+using Microsoft.Extensions.Options;
 
 namespace FinanceAPIData.TaskManagment
 {
@@ -12,9 +14,10 @@ namespace FinanceAPIData.TaskManagment
 		private ITaskDataService _taskDataService;
 		private TransactionLogoCalculator _transactionLogoCalculator;
 
-		public TaskFactory(TransactionLogoCalculator transactionLogoCalculator)
+		public TaskFactory(IBackgroundJobClient backgroundJobs, TransactionLogoCalculator transactionLogoCalculator)
 		{
 			_transactionLogoCalculator = transactionLogoCalculator;
+			
 		}
 
 		public void StartTask(Task task, TaskSettings taskSettings)
@@ -24,11 +27,9 @@ namespace FinanceAPIData.TaskManagment
 			if (!_taskDataService.AllocateTask(task.ID))
 				return;
 
-			ITask taskInstance = GetInstance(task.TaskType);
+			ITask taskInstance = GetInstance(task.TaskType, taskSettings);
 			if (taskInstance == null)
 				return;
-
-			taskInstance.Task = task;
 
 			taskInstance.Completed += Complete;
 
@@ -37,11 +38,12 @@ namespace FinanceAPIData.TaskManagment
 			try
 			{
 				// Executes task in the background
-				System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() =>
-				{
-					taskInstance.Execute(task.Data, taskSettings);
-				});
-				threadedTask.Start();
+				// System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() =>
+				// {
+				// 	taskInstance.Execute(task.Data, taskSettings);
+				// });
+				// threadedTask.Start();
+				
 			}
 			catch (Exception ex)
 			{
@@ -52,18 +54,15 @@ namespace FinanceAPIData.TaskManagment
 		private void Complete(object sender, EventArgs args)
 		{
 			//Remove From Queue
-			_taskDataService.RemoveTask((sender as ITask)?.Task.ID);
-
-			if (sender is AccountRefresh accountRefresh)
-				_transactionLogoCalculator.Run(accountRefresh.Task.ClientID, accountRefresh.Task.Data["AccountID"].ToString());
+			// _taskDataService.RemoveTask((sender as ITask)?.Task.ID);
 		}
 
-		private ITask GetInstance(TaskType taskType)
+		private ITask GetInstance(TaskType taskType, TaskSettings taskSettings)
 		{
 			switch (taskType)
 			{
 				case TaskType.AccountRefresh:
-					return new AccountRefresh();
+					return new AccountRefresh(new OptionsWrapper<TaskSettings>(taskSettings));
 				default:
 					return null;
 			}
