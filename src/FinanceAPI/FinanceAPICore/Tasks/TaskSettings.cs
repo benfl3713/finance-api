@@ -11,5 +11,6 @@ namespace FinanceAPICore.Tasks
 		public string TrueLayer_ClientSecret { get; set; }
 		public string TrueLayer_Mode { get; set; }
 		public string MongoDB_ConnectionString { get; set; } = "mongodb://localhost";
+		public Dictionary<string, Logo> LogoOverrides { get; set; }
 	}
 }

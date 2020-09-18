@@ -38,6 +38,7 @@ namespace FinanceAPICore.Tasks
 
 	public enum TaskType
 	{
-		AccountRefresh
+		AccountRefresh,
+		LogoCalculator
 	}
 }

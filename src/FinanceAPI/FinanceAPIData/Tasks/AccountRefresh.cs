@@ -70,6 +70,12 @@ namespace FinanceAPIData.Tasks
 
             BalanceAccount(account, totalAccountBalance);
 
+            
+            // Enqueue task to calculate logos on new transactions
+            Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
+            logoTask.Data = new Dictionary<string, object>{{"ClientID", Task.ClientID}, {"AccountID", accountID}};
+
+            BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
             base.Execute(Task);
         }
 

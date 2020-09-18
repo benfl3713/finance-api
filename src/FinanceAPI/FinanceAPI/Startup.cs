@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using FinanceAPI.Middleware;
+using FinanceAPICore;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
@@ -52,6 +53,7 @@ namespace FinanceAPI
 				settings.TrueLayer_ClientSecret = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientSecret));
 				settings.TrueLayer_Mode = Configuration.GetValue<string>(nameof(settings.TrueLayer_Mode));
 				settings.MongoDB_ConnectionString = Configuration.GetValue<string>(nameof(settings.MongoDB_ConnectionString)) ?? "mongodb://localhost";
+				settings.LogoOverrides = Configuration.GetValue<Dictionary<string, Logo>>(nameof(settings.LogoOverrides));
 			});
 			
 

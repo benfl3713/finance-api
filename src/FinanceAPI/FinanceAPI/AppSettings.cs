@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceAPICore;
 
 namespace FinanceAPI
 {
@@ -13,7 +14,7 @@ namespace FinanceAPI
 		public string TrueLayer_Mode { get; set; }
 		public string MongoDB_ConnectionString { get; set; } = "mongodb://localhost";
 		public bool UseTransactionCalculator { get; set; } = true;
-		public Dictionary<string, FinanceAPIData.TransactionLogoCalculator.Logo> LogoOverrides { get; set; }
+		public Dictionary<string, Logo> LogoOverrides { get; set; }
 		public bool EnableHangfireDashboard { get; set; } = true;
 	}
 }
