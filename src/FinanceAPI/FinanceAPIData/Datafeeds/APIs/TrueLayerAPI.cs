@@ -195,9 +195,6 @@ namespace FinanceAPIData.Datafeeds.APIs
                 foreach (Transaction transaction in transactions)
                 {
                     transaction.Status = Status.PENDING;
-                    
-                    if (string.IsNullOrEmpty(transaction.Vendor) && !string.IsNullOrEmpty(transaction.Merchant))
-                        transaction.Vendor = transaction.Merchant;
                 }
 
                 transactions.ForEach(t => t.Status = Status.PENDING);
@@ -234,6 +231,9 @@ namespace FinanceAPIData.Datafeeds.APIs
 					Transaction t = new Transaction(transactionID, date, accountId, category, amount, vendor, merchant, type);
 					t.Owner = nameof(TrueLayerAPI);
                     t.Currency = currency;
+
+                    if (string.IsNullOrEmpty(t.Vendor) && !string.IsNullOrEmpty(t.Merchant))
+                        t.Vendor = t.Merchant;
                     transactions.Add(t);
                 }
                 catch (Exception e)

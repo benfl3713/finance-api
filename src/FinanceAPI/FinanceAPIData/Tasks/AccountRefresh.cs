@@ -69,7 +69,6 @@ namespace FinanceAPIData.Tasks
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
             BalanceAccount(account, totalAccountBalance);
-
             
             // Enqueue task to calculate logos on new transactions
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
@@ -125,7 +124,7 @@ namespace FinanceAPIData.Tasks
 
         private void BalanceAccount(Account account, decimal accountBalance)
         {
-			if (accountBalance != 0 && account.CurrentBalance != accountBalance)
+			if (accountBalance != 0 && account.CurrentBalance.HasValue && account.CurrentBalance != accountBalance)
 			{
 				decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance);
 				List<Transaction> recentTransactions = _transactionDataService.GetTransactions(Task.ClientID).Where(t => t.Date > DateTime.Now.AddMonths(-1)).ToList();

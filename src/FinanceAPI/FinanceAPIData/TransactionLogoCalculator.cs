@@ -15,7 +15,7 @@ namespace FinanceAPIData
 		ITransactionsDataService _transactionsDataService;
 		IClientDataService _clientDataService;
 		string _connectionString;
-		System.Threading.Tasks.Task task;
+		// System.Threading.Tasks.Task task;
 		Dictionary<string, Logo> _logoOverrides;
 
 		public TransactionLogoCalculator(string connectionString, Dictionary<string, Logo> logoOverrides, bool startIntervalRunner = false)
