@@ -56,6 +56,8 @@ namespace FinanceAPIData.Tasks
                 return;
             }
 
+            AccountSettings accountSettings = _accountDataService.GetAccountSettings(accountID);
+
             decimal totalAccountBalance = 0;
             decimal totalAvailableAccountBalance = 0;
 
@@ -68,7 +70,8 @@ namespace FinanceAPIData.Tasks
             // Reload account to get new balance
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
-            BalanceAccount(account, totalAccountBalance);
+            if(accountSettings != null && accountSettings.GenerateAdjustments)
+                BalanceAccount(account, totalAccountBalance);
             
             // Enqueue task to calculate logos on new transactions
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
