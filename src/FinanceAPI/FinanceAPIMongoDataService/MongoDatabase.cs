@@ -32,12 +32,12 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
-		public T LoadRecordById<T>(string table, string id)
+		public T LoadRecordById<T>(string table, string id, string idField = "ID")
 		{
 			try
 			{
 				var collection = db.GetCollection<T>(table);
-				var filter = Builders<T>.Filter.Eq("ID", id);
+				var filter = Builders<T>.Filter.Eq(idField, id);
 				return collection.Find(filter).FirstOrDefault();
 			}
 			catch (Exception ex)
@@ -96,12 +96,12 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
-		public bool UpsertRecord<T>(string table, T record, string id, FilterDefinition<T> customFilter = null)
+		public bool UpsertRecord<T>(string table, T record, string id, FilterDefinition<T> customFilter = null, string idField = "ID")
 		{
 			try
 			{
 				var collection = db.GetCollection<T>(table);
-				var filter = Builders<T>.Filter.Eq("ID", id);
+				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
 					filter = filter & customFilter;
 				var options = new ReplaceOptions { IsUpsert = true };

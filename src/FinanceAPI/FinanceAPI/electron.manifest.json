@@ -4,7 +4,7 @@
         "imageFile": ""
     },
     "name": "FinanceAPI",
-    "icon":  "wwwroot/logo_square.png",
+    "icon":  "wwwroot/favicon.ico",
     "author": "benfl3713",
     "singleInstance": true,
     "aspCoreBackendPort": 5001,

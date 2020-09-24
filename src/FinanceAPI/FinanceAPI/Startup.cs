@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElectronNET.API;
@@ -171,7 +172,7 @@ namespace FinanceAPI
 			);
 
 			// Add the processing server as IHostedService
-			services.AddHangfireServer();
+			//services.AddHangfireServer();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)

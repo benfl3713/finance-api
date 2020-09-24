@@ -70,13 +70,13 @@ namespace FinanceAPIMongoDataService.DataService
 		public bool SetAccountSettings(AccountSettings accountSettings)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
-			return database.UpsertRecord(accountSettingsTable, accountSettings, accountSettings.AccountID);
+			return database.UpsertRecord(accountSettingsTable, accountSettings, accountSettings.AccountID, idField: "AccountID");
 		}
 
 		public AccountSettings GetAccountSettings(string accountId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
-			return database.LoadRecordById<AccountSettings>(accountSettingsTable, accountId);
+			return database.LoadRecordById<AccountSettings>(accountSettingsTable, accountId, "AccountID");
 		}
 
 		private decimal GetCurrentAccountBalance(string accountId)
