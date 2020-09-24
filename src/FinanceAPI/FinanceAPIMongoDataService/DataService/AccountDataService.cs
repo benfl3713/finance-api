@@ -67,6 +67,12 @@ namespace FinanceAPIMongoDataService.DataService
 			return accounts;
 		}
 
+		public List<Account> GetAllAccounts()
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			return database.LoadRecordsByFilter<Account>(tableName, null);
+		}
+
 		public bool SetAccountSettings(AccountSettings accountSettings)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
@@ -77,6 +83,13 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			return database.LoadRecordById<AccountSettings>(accountSettingsTable, accountId, "AccountID");
+		}
+
+		public bool UpdateLastRefreshedDate(string accountId, DateTime? lastRefreshed)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			var update = Builders<Account>.Update.Set(a => a.LastRefreshed, lastRefreshed);
+			return database.UpdateRecordFields(tableName, accountId, update);
 		}
 
 		private decimal GetCurrentAccountBalance(string accountId)

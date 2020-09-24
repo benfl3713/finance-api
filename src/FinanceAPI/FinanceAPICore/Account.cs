@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using System;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
@@ -15,6 +16,8 @@ namespace FinanceAPICore
         public decimal? CurrentBalance;
         [BsonIgnore]
         public decimal? AvailableBalance;
+
+        public DateTime? LastRefreshed;
 
         public Account()
 		{

@@ -1,15 +1,10 @@
 ﻿using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using FinanceAPIData.Tasks;
 using Hangfire;
-using Hangfire.States;
-using Hangfire.Storage;
 
 namespace FinanceAPIData.TaskManagment
 {
@@ -29,9 +24,9 @@ namespace FinanceAPIData.TaskManagment
 
 			System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() => Start());
 			threadedTask.Start();
-
-
+			
 			RecurringJob.AddOrUpdate(() => transactionLogoCalculator.Run(null, null), Cron.Hourly);
+			RecurringJob.AddOrUpdate<AccountRefreshPoller>(r => r.Execute(null), "0 */5 * ? * *");
 		}
 
 		public void Start()

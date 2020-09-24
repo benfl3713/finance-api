@@ -172,7 +172,7 @@ namespace FinanceAPI
 			);
 
 			// Add the processing server as IHostedService
-			//services.AddHangfireServer();
+			services.AddHangfireServer();
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)

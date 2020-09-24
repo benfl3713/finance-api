@@ -74,6 +74,9 @@ namespace FinanceAPIData.Tasks
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
             logoTask.Data = new Dictionary<string, object>{{"ClientID", Task.ClientID}, {"AccountID", accountID}};
 
+            // Set Account Last Refreshed Date
+            _accountDataService.UpdateLastRefreshedDate(accountID, DateTime.Now);
+
             BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
             base.Execute(Task);
         }
