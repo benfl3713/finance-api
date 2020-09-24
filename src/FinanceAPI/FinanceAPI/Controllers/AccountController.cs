@@ -71,5 +71,21 @@ namespace FinanceAPI.Controllers
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_accountProcessor.GetSpentThisWeek(accountId, clientId));
 		}
+
+		[HttpGet("{accountId}/[action]")]
+		public IActionResult GetAccountSettings([FromRoute(Name = "accountId")] [Required]
+			string accountId)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_accountProcessor.GetAccountSettings(accountId, clientId));
+		}
+
+		[HttpPost("{accountId}/[action]")]
+
+		public IActionResult SetAccountSettings([FromBody] AccountSettings accountSettings)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_accountProcessor.SetAccountSettings(accountSettings, clientId));
+		}
 	}
 }

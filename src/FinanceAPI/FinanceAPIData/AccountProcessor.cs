@@ -88,5 +88,23 @@ namespace FinanceAPIData
 				.Sum(t => t.Amount)
 				* -1;
 		}
+
+		public bool SetAccountSettings(AccountSettings accountSettings, string clientId)
+		{
+			Account account = _accountDataService.GetAccountById(accountSettings.AccountID, clientId);
+			if (account == null)
+				throw new Exception("Cannot find account");
+
+			return _accountDataService.SetAccountSettings(accountSettings);
+		}
+
+		public AccountSettings GetAccountSettings(string accountId, string clientId)
+		{
+			Account account = _accountDataService.GetAccountById(accountId, clientId);
+			if (account == null)
+				throw new Exception("Cannot find account");
+
+			return _accountDataService.GetAccountSettings(accountId);
+		}
 	}
 }

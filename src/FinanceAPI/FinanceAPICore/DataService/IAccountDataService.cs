@@ -11,5 +11,7 @@ namespace FinanceAPICore.DataService
 		bool UpdateAccount(Account account);
 		bool DeleteAccount(string accountId, string clientId);
 		List<Account> GetAccounts(string clientId);
+		bool SetAccountSettings(AccountSettings accountSettings);
+		AccountSettings GetAccountSettings(string accountId);
 	}
 }

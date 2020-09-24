@@ -11,6 +11,7 @@ namespace FinanceAPIMongoDataService.DataService
 	{
 		static string databaseName = "finance";
 		static string tableName = "accounts";
+		private static string accountSettingsTable = "account-settings";
 		string connectionString;
 
 		public AccountDataService(string connectionString)
@@ -64,6 +65,18 @@ namespace FinanceAPIMongoDataService.DataService
 			});
 
 			return accounts;
+		}
+
+		public bool SetAccountSettings(AccountSettings accountSettings)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			return database.UpsertRecord(accountSettingsTable, accountSettings, accountSettings.AccountID);
+		}
+
+		public AccountSettings GetAccountSettings(string accountId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			return database.LoadRecordById<AccountSettings>(accountSettingsTable, accountId);
 		}
 
 		private decimal GetCurrentAccountBalance(string accountId)
