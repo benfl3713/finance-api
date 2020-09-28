@@ -50,6 +50,8 @@ namespace FinanceAPIData.Tasks
             {
                 case AccountSettings.RefreshIntervals.hourly:
                     return lastRefreshed.Value.ToUniversalTime() < DateTime.UtcNow.AddHours(-1);
+                case AccountSettings.RefreshIntervals.sixHours:
+                    return lastRefreshed.Value.ToUniversalTime() < DateTime.UtcNow.AddHours(-6);
                 case AccountSettings.RefreshIntervals.biDaily:
                     return lastRefreshed.Value.ToUniversalTime() < DateTime.UtcNow.AddHours(-12);
                 case AccountSettings.RefreshIntervals.Daily:

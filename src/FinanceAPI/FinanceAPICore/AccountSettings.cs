@@ -19,6 +19,7 @@ namespace FinanceAPICore
         {
             Never,
             hourly,
+            sixHours,
             biDaily,
             Daily
         }
