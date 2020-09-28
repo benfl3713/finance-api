@@ -70,7 +70,7 @@ namespace FinanceAPIData
 			return transactions;
 		}
 
-		private void LoadTransactionAccountNames(List<Transaction> transactions, string clientId)
+		public void LoadTransactionAccountNames(List<Transaction> transactions, string clientId)
 		{
 			Dictionary<string, string> accountNames = new Dictionary<string, string>();
 			AccountProcessor accountProcessor = new AccountProcessor(_connectionString);
