@@ -57,6 +57,9 @@ namespace FinanceAPIMongoDataService.DataService
 			{
 				if (existingTransaction.Owner == "User")
 					return false;
+				
+				if(string.IsNullOrEmpty(transaction.Logo))
+					transaction.Logo = existingTransaction.Logo;
 				return UpdateTransaction(transaction);
 			}
 
