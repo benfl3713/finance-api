@@ -58,7 +58,7 @@ namespace FinanceAPIData
 
                 // Fill in any null values that would be all the values after the last transaction
                 decimal? lastValue = result[account.ID].History.OrderByDescending(h => h.Key).Where(h => h.Value != null)
-                    .Select(h => h.Value).First();
+                    .Select(h => h.Value).FirstOrDefault(0);
                 var notSet = result[account.ID].History.Where(h => h.Value == null).ToList();
                 foreach (KeyValuePair<DateTime, decimal?> t in notSet)
                 {
