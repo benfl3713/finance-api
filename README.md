@@ -24,3 +24,7 @@ Also You can
 - Statistic Calculations based of transaction data
 - A personal finance manager that uses this api
 - A different database technology (The current design is based on interfaces which will allow different databases to be used)
+
+# Need Help?
+
+- If you have any questions feel free to raise an issue or email me at **benfl3713@gmail.com**
