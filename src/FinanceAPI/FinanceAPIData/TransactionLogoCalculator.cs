@@ -12,11 +12,11 @@ namespace FinanceAPIData
 {
 	public class TransactionLogoCalculator
 	{
-		ITransactionsDataService _transactionsDataService;
-		IClientDataService _clientDataService;
+		protected ITransactionsDataService _transactionsDataService;
+		protected IClientDataService _clientDataService;
 		string _connectionString;
 		// System.Threading.Tasks.Task task;
-		Dictionary<string, Logo> _logoOverrides;
+		protected Dictionary<string, Logo> _logoOverrides;
 
 		public TransactionLogoCalculator(string connectionString, Dictionary<string, Logo> logoOverrides, bool startIntervalRunner = false)
 		{
@@ -144,7 +144,7 @@ namespace FinanceAPIData
 
 		}
 
-		private bool DoesImageExit(string url)
+		protected virtual bool DoesImageExit(string url)
 		{
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 			request.Method = "HEAD";

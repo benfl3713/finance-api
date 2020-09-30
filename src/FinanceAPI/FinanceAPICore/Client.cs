@@ -17,19 +17,6 @@ namespace FinanceAPICore
         [JsonIgnore]
         public string Password;
         public Client() { }
-        public Client(string id, string firstname, string lastname, string username)
-        {
-            ID = id;
-            FirstName = firstname;
-            LastName = lastname;
-            Username = username;
-        }
-        public Client(string firstname, string lastname, string username)
-        {
-            FirstName = firstname;
-            LastName = lastname;
-            Username = username;
-        }
 
         public static Client CreateFromJson(JObject jClient)
 		{

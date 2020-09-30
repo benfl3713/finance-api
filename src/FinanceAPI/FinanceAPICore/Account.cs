@@ -22,16 +22,6 @@ namespace FinanceAPICore
         public Account()
 		{
 		}
-        public Account(string ID,string AccountName)
-        {
-            this.ID = ID;
-            this.AccountName = AccountName;
-        }
-
-        public Account(string AccountName)
-        {
-            this.AccountName = AccountName;
-        }
 
         public static Account CreateFromJson(JObject jAccount, string clientId)
         {

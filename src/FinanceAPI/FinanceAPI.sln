@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceAPIMongoDataService"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceAPIData", "FinanceAPIData\FinanceAPIData.csproj", "{4B4D3FB7-4776-4DB9-BB9E-2B819F59907A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceAPICoreTests", "UnitTests\FinanceAPICoreTests\FinanceAPICoreTests.csproj", "{DA3A2E8E-0A14-4CB0-97EC-D340C1A2CF8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceAPIDataTests", "UnitTests\FinanceAPIDataTests\FinanceAPIDataTests.csproj", "{33E5A3B4-85A5-4FAC-AA3D-A03029BD244F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{4B4D3FB7-4776-4DB9-BB9E-2B819F59907A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B4D3FB7-4776-4DB9-BB9E-2B819F59907A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B4D3FB7-4776-4DB9-BB9E-2B819F59907A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA3A2E8E-0A14-4CB0-97EC-D340C1A2CF8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA3A2E8E-0A14-4CB0-97EC-D340C1A2CF8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA3A2E8E-0A14-4CB0-97EC-D340C1A2CF8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA3A2E8E-0A14-4CB0-97EC-D340C1A2CF8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33E5A3B4-85A5-4FAC-AA3D-A03029BD244F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33E5A3B4-85A5-4FAC-AA3D-A03029BD244F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33E5A3B4-85A5-4FAC-AA3D-A03029BD244F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33E5A3B4-85A5-4FAC-AA3D-A03029BD244F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
