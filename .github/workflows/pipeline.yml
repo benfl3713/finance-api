@@ -31,6 +31,6 @@ jobs:
       - name: Docker Publish
         if: github.ref == 'refs/heads/master'
         run: |
-          docker push $DOCKER_USERNAME/finance-api
+          docker push $DOCKERHUB_USERNAME/finance-api
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
