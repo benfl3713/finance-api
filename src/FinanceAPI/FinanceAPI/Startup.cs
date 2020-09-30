@@ -14,6 +14,7 @@ using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
 using Hangfire;
 using Hangfire.Console;
+using Hangfire.Dashboard;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
@@ -30,6 +31,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
+using MenuItem = ElectronNET.API.Entities.MenuItem;
 
 namespace FinanceAPI
 {
@@ -108,7 +110,11 @@ namespace FinanceAPI
 				app.ApplicationServices.GetService<TransactionLogoCalculator>();
 
 			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.EnableHangfireDashboard)
-				app.UseHangfireDashboard();
+				app.UseHangfireDashboard( "/tasks", new DashboardOptions
+				{
+					AppPath = null,
+					Authorization = new [] {new HangfireAuthorizationFilter()}
+				});
 		}
 
 		private void AddProcessors(IServiceCollection services)
@@ -159,8 +165,8 @@ namespace FinanceAPI
 				{
 					MigrationStrategy = new MigrateMongoMigrationStrategy(),
 					BackupStrategy = new CollectionMongoBackupStrategy()
-				}
-				
+				},
+				CheckConnection = false
 			};
 			
 			// Add Hangfire services.
@@ -174,6 +180,15 @@ namespace FinanceAPI
 
 			// Add the processing server as IHostedService
 			services.AddHangfireServer();
+		}
+
+		public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
+		{
+			public bool Authorize(DashboardContext context)
+			{
+				// Allow all access
+				return true;
+			}
 		}
 
 		private void SetupElectron(IWebHostEnvironment env)
