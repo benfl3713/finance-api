@@ -39,7 +39,7 @@ namespace FinanceAPIDataTests
                 {
                     yield return new TestCaseData(new Transaction("TEST1", DateTime.Today, "TESTACCOUNT1", "Test", 5, "Test", type: "Adjust"), "/assets/logo_square.png");
                     yield return new TestCaseData(new Transaction("TEST2", DateTime.Today, "TESTACCOUNT1", "Test", 5, "Adjust", type: "Test"), "/assets/logo_square.png");
-                    yield return new TestCaseData(new Transaction("TEST3", DateTime.Today, "TESTACCOUNT1", "Test", 5, "Test", "Adjust"), "sdfsdf/assets/logo_square.png");
+                    yield return new TestCaseData(new Transaction("TEST3", DateTime.Today, "TESTACCOUNT1", "Test", 5, "Test", "Adjust"), "/assets/logo_square.png");
                     yield return new TestCaseData(new Transaction("TEST4", DateTime.Today, "TESTACCOUNT1", "Test", 5, "Test", "Test"), "https://logo.clearbit.com/Test.com");
                 }
             }
