@@ -28,3 +28,38 @@ Also You can
 # Need Help?
 
 - If you have any questions feel free to raise an issue or email me at **benfl3713@gmail.com**
+
+# Docker  
+If you want to run the finance manager and finance api and database all together then you can use the following docker-compose configuration.
+(This assumes you are running on windows. Just modify the volume mappings if you're using linux or mac os to a different host directory)
+
+```
+version: "3"
+
+services:
+  finance-manager:
+    image: benfl3713/finance-manager:latest
+    depends_on:
+      - finance-api
+    ports:
+      - "5005:80"
+    environment:
+      FinanceApiUrl: "http://localhost:5001/api"
+  finance-api:
+    image: benfl3713/finance-api:latest
+    depends_on:
+      - mongo-db
+    ports:
+      - "5001:80"
+    volumes:
+      - c:/finance-api:/app/config
+    environment:
+      MongoDB_ConnectionString: "mongodb://mongo-db"
+  mongo-db:
+    image: mongo
+    ports:
+      - "27017-27019:27017-27019"
+    volumes:
+      - c:/mongodb/finance:/data/db
+```
+
