@@ -23,5 +23,12 @@ namespace FinanceAPI.Controllers
             string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
             return _statisticsProcessor.GetBalanceHistory(clientId, accountId);
         }
+
+        [HttpGet("[action]")]
+        public Dictionary<string, decimal> GetSpentAmountPerCategory()
+        {
+            string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+            return _statisticsProcessor.GetSpentAmountPerCategory(clientId);
+        }
     }
 }

@@ -69,6 +69,19 @@ namespace FinanceAPIData
             return result;
         }
 
+        public Dictionary<string, decimal> GetSpentAmountPerCategory(string clientId, DateTime? dateFrom = null)
+        {
+            Dictionary<string, decimal> result = new Dictionary<string, decimal>();
+            dateFrom ??= DateTime.Today.AddMonths(-1);
+            List<Transaction> transactions = _transactionProcessor.GetTransactions(clientId).Where(t => t.Amount < 0 && t.Date >= dateFrom).ToList();
+            foreach (IGrouping<string,Transaction> categoryGroups in transactions.GroupBy(t => t.Category))
+            {
+                result.Add(categoryGroups.Key, categoryGroups.Sum(t => t.Amount * -1));
+            }
+
+            return result;
+        }
+
         public class AccountBalanceHistory
         {
             public string AccountID;
