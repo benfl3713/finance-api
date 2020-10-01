@@ -18,10 +18,10 @@ namespace FinanceAPI.Controllers
         }
         
         [HttpGet("[action]")]
-        public Dictionary<string, StatisticsProcessor.AccountBalanceHistory> GetBalanceHistory(string accountId = null)
+        public Dictionary<string, StatisticsProcessor.AccountBalanceHistory> GetBalanceHistory(string accountId = null, DateTime? dateFrom = null)
         {
             string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
-            return _statisticsProcessor.GetBalanceHistory(clientId, accountId);
+            return _statisticsProcessor.GetBalanceHistory(clientId, accountId, dateFrom);
         }
 
         [HttpGet("[action]")]
