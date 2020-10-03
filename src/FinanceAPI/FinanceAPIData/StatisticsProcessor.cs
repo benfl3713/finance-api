@@ -28,6 +28,8 @@ namespace FinanceAPIData
             Dictionary<string, AccountBalanceHistory> result = new Dictionary<string, AccountBalanceHistory>();
             if(!dateFrom.HasValue)
                 dateFrom = DateTime.Today.AddYears(-1);
+
+            dateFrom = dateFrom.Value.Date;
             
             List<Account> accounts = _accountProcessor.GetAccounts(clientId).Where(a => string.IsNullOrEmpty(accountId) || a.ID == accountId).ToList();
             
@@ -39,17 +41,20 @@ namespace FinanceAPIData
                 List<Transaction> allTransactions = _transactionProcessor.GetTransactions(clientId, account.ID).Where(t => t.Status == Status.SETTLED).ToList();
                 List<Transaction> transactions = allTransactions.Where(t => t.Date.Date >= dateFrom.Value.Date).ToList();
                 IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date.Date);
+                
+                // Set starting balance for the first day required
+                result[account.ID].History[dateFrom.Value] = allTransactions.Where(t => t.Date <= dateFrom).Sum(t => t.Amount);
 
                 foreach (IGrouping<DateTime, Transaction> dateGroup in dateGroups.OrderBy(d => d.Key))
                 {
                     // Calculate and set the dates balance
                     decimal accountBalance = allTransactions.Where(t => t.Date.Date <= dateGroup.Key.Date).Sum(t => t.Amount);
-                    result[account.ID].History[dateGroup.Key] = accountBalance;
+                    result[account.ID].History[dateGroup.Key.Date] = accountBalance;
                     
                     // Set all older values that are null to the previous value. This accounts for when the were gaps where no transactions happened
                     decimal? previousValue = result[account.ID].History.OrderByDescending(h => h.Key).Where(h => h.Value != null && h.Key < dateGroup.Key)
                         .Select(h => h.Value).FirstOrDefault(0);
-                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key).ToList();
+                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key.Date).ToList();
                     for (int i = 0; i < nonSet.Count; i++)
                     {
                         result[account.ID].History[nonSet[i].Key] = previousValue;
