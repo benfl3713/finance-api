@@ -33,11 +33,11 @@ namespace FinanceAPIData
             
             foreach (Account account in accounts)
             {
-                result.Add(account.ID, new AccountBalanceHistory(dateFrom.Value));
+                result.Add(account.ID, new AccountBalanceHistory(dateFrom.Value.Date));
                 result[account.ID].AccountID = account.ID;
                 result[account.ID].AccountName = account.AccountName;
                 List<Transaction> allTransactions = _transactionProcessor.GetTransactions(clientId, account.ID).Where(t => t.Status == Status.SETTLED).ToList();
-                List<Transaction> transactions = allTransactions.Where(t => t.Date.Date >= dateFrom).ToList();
+                List<Transaction> transactions = allTransactions.Where(t => t.Date.Date >= dateFrom.Value.Date).ToList();
                 IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date.Date);
 
                 foreach (IGrouping<DateTime, Transaction> dateGroup in dateGroups.OrderBy(d => d.Key))
@@ -91,7 +91,7 @@ namespace FinanceAPIData
             public AccountBalanceHistory(DateTime? dateFrom = null)
             {
                 dateFrom ??= DateTime.Today.AddYears(-1);
-                for (DateTime date = dateFrom.Value; date <= DateTime.Today; date = date.AddDays(1))
+                for (DateTime date = dateFrom.Value.Date; date <= DateTime.Today; date = date.AddDays(1))
                 {
                     History.Add(date, null);
                 }
