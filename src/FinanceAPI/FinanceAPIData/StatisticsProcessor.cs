@@ -43,12 +43,12 @@ namespace FinanceAPIData
                 IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date.Date);
                 
                 // Set starting balance for the first day required
-                result[account.ID].History[dateFrom.Value] = allTransactions.Where(t => t.Date <= dateFrom).Sum(t => t.Amount);
+                result[account.ID].History[dateFrom.Value] = allTransactions.Where(t => t.Date.ToUniversalTime() <= dateFrom.Value.ToUniversalTime()).Sum(t => t.Amount);
 
                 foreach (IGrouping<DateTime, Transaction> dateGroup in dateGroups.OrderBy(d => d.Key))
                 {
                     // Calculate and set the dates balance
-                    decimal accountBalance = allTransactions.Where(t => t.Date.Date <= dateGroup.Key.Date).Sum(t => t.Amount);
+                    decimal accountBalance = allTransactions.Where(t => t.Date.Date.ToUniversalTime() <= dateGroup.Key.Date.ToUniversalTime()).Sum(t => t.Amount);
                     result[account.ID].History[dateGroup.Key.Date] = accountBalance;
                     
                     // Set all older values that are null to the previous value. This accounts for when the were gaps where no transactions happened

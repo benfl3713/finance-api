@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace FinanceAPIData.Datafeeds.APIs
@@ -218,7 +219,8 @@ namespace FinanceAPIData.Datafeeds.APIs
                 {
                     string transactionID = transaction["transaction_id"];
                     decimal.TryParse(transaction["amount"].ToString() ?? "0", out decimal amount);
-                    DateTime.TryParse(transaction["timestamp"].ToString(), out DateTime date);
+                    if (!DateTime.TryParseExact(transaction["timestamp"].ToString(), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime date))
+                        DateTime.TryParse(transaction["timestamp"].ToString(), CultureInfo.CurrentCulture, DateTimeStyles.AssumeUniversal,out date);
                     string category = ((string)transaction["transaction_category"])?.ToTitleCase();
                     string type = category;
                     if ((transaction["transaction_classification"]).Count > 0 && !string.IsNullOrEmpty((transaction["transaction_classification"])[0].ToString()))
