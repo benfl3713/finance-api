@@ -33,6 +33,13 @@ namespace FinanceAPIMongoDataService.DataService
 			return database.DeleteRecord<Transaction>(tableName, transactionId, filter);
 		}
 
+		public bool DeleteOldTransaction(string transactionId, string clientId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			var filter = Builders<OldTransaction>.Filter.Eq("ClientID", clientId);
+			return database.DeleteRecord(tableName, transactionId, filter);
+		}
+
 		public Transaction GetTransactionById(string transactionId, string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
@@ -47,6 +54,13 @@ namespace FinanceAPIMongoDataService.DataService
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
+			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
+		}
+
+		public List<OldTransaction> GetOldTransactions(string clientId)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			var filter = Builders<OldTransaction>.Filter.Eq("ClientID", clientId);
 			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
 		}
 

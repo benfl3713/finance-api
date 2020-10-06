@@ -88,6 +88,8 @@ namespace FinanceAPI
 				app.UseDeveloperExceptionPage();
 			}
 
+			new TransactionMigrater().Run(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString);
+
 			// global cors policy
 			app.UseCors();
 
