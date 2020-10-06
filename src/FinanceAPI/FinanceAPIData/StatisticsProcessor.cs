@@ -29,32 +29,34 @@ namespace FinanceAPIData
             if(!dateFrom.HasValue)
                 dateFrom = DateTime.Today.AddYears(-1);
 
-            dateFrom = dateFrom.Value.Date;
+            // Convert to UTC as it is what the transactions dates are given in
+            dateFrom = dateFrom.Value.ToUniversalTime();
+            
             
             List<Account> accounts = _accountProcessor.GetAccounts(clientId).Where(a => string.IsNullOrEmpty(accountId) || a.ID == accountId).ToList();
             
             foreach (Account account in accounts)
             {
-                result.Add(account.ID, new AccountBalanceHistory(dateFrom.Value.Date));
+                result.Add(account.ID, new AccountBalanceHistory(dateFrom.Value));
                 result[account.ID].AccountID = account.ID;
                 result[account.ID].AccountName = account.AccountName;
                 List<Transaction> allTransactions = _transactionProcessor.GetTransactions(clientId, account.ID).Where(t => t.Status == Status.SETTLED).ToList();
-                List<Transaction> transactions = allTransactions.Where(t => t.Date.Date >= dateFrom.Value.Date).ToList();
-                IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date.Date);
+                List<Transaction> transactions = allTransactions.Where(t => t.Date >= dateFrom.Value).ToList();
+                IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date);
                 
                 // Set starting balance for the first day required
-                result[account.ID].History[dateFrom.Value] = allTransactions.Where(t => t.Date.ToUniversalTime() <= dateFrom.Value.ToUniversalTime()).Sum(t => t.Amount);
+                result[account.ID].History[dateFrom.Value.Date.ToUniversalTime()] = allTransactions.Where(t => t.Date.ToUniversalTime() <= dateFrom.Value.ToUniversalTime()).Sum(t => t.Amount);
 
                 foreach (IGrouping<DateTime, Transaction> dateGroup in dateGroups.OrderBy(d => d.Key))
                 {
                     // Calculate and set the dates balance
-                    decimal accountBalance = allTransactions.Where(t => t.Date.Date.ToUniversalTime() <= dateGroup.Key.Date.ToUniversalTime()).Sum(t => t.Amount);
-                    result[account.ID].History[dateGroup.Key.Date] = accountBalance;
+                    decimal accountBalance = allTransactions.Where(t => t.Date.ToUniversalTime() <= dateGroup.Key.Date.ToUniversalTime()).Sum(t => t.Amount);
+                    result[account.ID].History[dateGroup.Key.Date.ToUniversalTime()] = accountBalance;
                     
                     // Set all older values that are null to the previous value. This accounts for when the were gaps where no transactions happened
                     decimal? previousValue = result[account.ID].History.OrderByDescending(h => h.Key).Where(h => h.Value != null && h.Key < dateGroup.Key)
                         .Select(h => h.Value).FirstOrDefault(0);
-                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key.Date).ToList();
+                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key.Date.ToUniversalTime()).ToList();
                     for (int i = 0; i < nonSet.Count; i++)
                     {
                         result[account.ID].History[nonSet[i].Key] = previousValue;
@@ -78,7 +80,7 @@ namespace FinanceAPIData
         {
             Dictionary<string, decimal> result = new Dictionary<string, decimal>();
             dateFrom ??= DateTime.Today.AddMonths(-1);
-            List<Transaction> transactions = _transactionProcessor.GetTransactions(clientId).Where(t => t.Amount < 0 && t.Date >= dateFrom).ToList();
+            List<Transaction> transactions = _transactionProcessor.GetTransactions(clientId).Where(t => t.Amount < 0 && t.Date.ToUniversalTime() >= dateFrom.Value.ToUniversalTime()).ToList();
             foreach (IGrouping<string,Transaction> categoryGroups in transactions.GroupBy(t => t.Category))
             {
                 result.Add(categoryGroups.Key, categoryGroups.Sum(t => t.Amount * -1));
