@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Serilog.Events;
 
 namespace FinanceAPIData.Datafeeds.APIs
 {
@@ -65,6 +66,8 @@ namespace FinanceAPIData.Datafeeds.APIs
                 }
             }
 
+            Serilog.Log.Logger?.Write(LogEventLevel.Error, $"Truelayer returned response: {response.Content}");
+            
             return false;
         }
 
