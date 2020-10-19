@@ -63,12 +63,12 @@ namespace FinanceAPIMongoDataService
 			}
 		}
 
-		public bool UpdateRecord<T>(string table, T record, string id, FilterDefinition<T> customFilter = null)
+		public bool UpdateRecord<T>(string table, T record, string id, FilterDefinition<T> customFilter = null, string idField = "ID")
 		{
 			try
 			{
 				var collection = db.GetCollection<T>(table);
-				var filter = Builders<T>.Filter.Eq("ID", id);
+				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
 					filter = filter & customFilter;
 				collection.ReplaceOne(filter, record);

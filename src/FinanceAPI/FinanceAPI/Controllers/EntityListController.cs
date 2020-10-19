@@ -18,11 +18,13 @@ namespace FinanceAPI.Controllers
 		private AccountProcessor _accountProcessor;
 		private TransactionProcessor _transactionProcessor;
 		private DatafeedProcessor _datafeedProcessor;
-		public EntityListController(AccountProcessor accountProcessor, TransactionProcessor transactionProcessor, DatafeedProcessor datafeedProcessor)
+		private GoalProcessor _goalProcessor;
+		public EntityListController(AccountProcessor accountProcessor, TransactionProcessor transactionProcessor, DatafeedProcessor datafeedProcessor, GoalProcessor goalProcessor)
 		{
 			_accountProcessor = accountProcessor;
 			_transactionProcessor = transactionProcessor;
 			_datafeedProcessor = datafeedProcessor;
+			_goalProcessor = goalProcessor;
 		}
 
 		[HttpGet("accounts")]
@@ -44,6 +46,13 @@ namespace FinanceAPI.Controllers
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_datafeedProcessor.GetDatafeeds(clientId, datafeedType));
+		}
+
+		[HttpGet("goals")]
+		public IActionResult GetGoals()
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_goalProcessor.GetGoals(clientId));
 		}
 	}
 }
