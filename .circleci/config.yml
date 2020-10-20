@@ -10,7 +10,7 @@ workflows:
 jobs:
   build:
     docker:
-      - image: "circleci/node:9.6.1"
+      - image: "ubuntu:latest"
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
