@@ -1,12 +1,22 @@
- version: 2.1
+version: 2.1
 
- orbs:
-  win: circleci/windows@2.2.0
+workflows:
+  pipeline:
+    jobs:
+      - build:
+          context:
+            - Docker Hub
 
- jobs:
-   build:
-     executor: win/default     
-    
-     steps:
-       - checkout
-       - run: dotnet build
+jobs:
+  build:
+    docker:
+      - image: "circleci/node:9.6.1"
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+
+    steps:
+      - checkout
+      - run: |
+          cd src/FinanceAPI
+          docker build -t $DOCKERHUB_USERNAME/finance-api:latest .
