@@ -21,7 +21,7 @@ namespace FinanceAPI.Controllers
         public Dictionary<string, StatisticsProcessor.AccountBalanceHistory> GetBalanceHistory(string accountId = null, DateTime? dateFrom = null)
         {
             string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
-            return _statisticsProcessor.GetBalanceHistory(clientId, accountId, dateFrom);
+            return _statisticsProcessor.GetBalanceHistoryV2(clientId, accountId, dateFrom);
         }
 
         [HttpGet("[action]")]
