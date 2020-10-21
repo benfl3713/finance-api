@@ -47,7 +47,7 @@ namespace FinanceAPIDataTests
         
         private class TransactionLogoCalculatorMock : TransactionLogoCalculator
         {
-            public TransactionLogoCalculatorMock(string connectionString, Dictionary<string, Logo> logoOverrides = null, bool startIntervalRunner = false) : base(connectionString, logoOverrides, startIntervalRunner)
+            public TransactionLogoCalculatorMock(string connectionString, Dictionary<string, Logo> logoOverrides = null) : base(connectionString, logoOverrides)
             {
                 _logoOverrides = logoOverrides ?? new Dictionary<string, Logo>
                 {

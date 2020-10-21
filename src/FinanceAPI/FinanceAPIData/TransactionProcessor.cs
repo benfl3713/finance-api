@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FinanceAPICore.Tasks;
+using FinanceAPIData.Tasks;
+using Hangfire;
 
 namespace FinanceAPIData
 {
@@ -29,7 +32,13 @@ namespace FinanceAPIData
 
 			transaction.Owner = "User";
 
-			return _transactionDataService.InsertTransaction(transaction) ? transaction.ID : null;
+			string result = _transactionDataService.InsertTransaction(transaction) ? transaction.ID : null;
+
+			// Run logo calculator task on affected account
+			Task logoTask = new Task($"Logo Calculator [{transaction.AccountName}]", transaction.ClientID, TaskType.LogoCalculator, DateTime.Now) {Data = new Dictionary<string, object> {{"ClientID", transaction.ClientID}, {"AccountID", transaction.AccountID}}};
+			BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
+
+			return result;
 		}
 
 		public Transaction GetTransactionById(string transactionId, string clientId)

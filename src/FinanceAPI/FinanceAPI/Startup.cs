@@ -65,7 +65,7 @@ namespace FinanceAPI
 			AddProcessors(services);
 			
 			services.AddTransient<JwtMiddleware>();
-			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides, true));
+			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides));
 			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<IBackgroundJobClient>(), tp.GetRequiredService<TransactionLogoCalculator>()));
 
 
