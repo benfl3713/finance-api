@@ -42,21 +42,21 @@ namespace FinanceAPIData
                 result[account.ID].AccountName = account.AccountName;
                 List<Transaction> allTransactions = _transactionProcessor.GetTransactions(clientId, account.ID).Where(t => t.Status == Status.SETTLED).ToList();
                 List<Transaction> transactions = allTransactions.Where(t => t.Date >= dateFrom.Value).ToList();
-                IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date);
+                IEnumerable<IGrouping<DateTime, Transaction>> dateGroups = transactions.GroupBy(t => t.Date.Date);
                 
                 // Set starting balance for the first day required
-                result[account.ID].History[dateFrom.Value.Date.ToUniversalTime()] = allTransactions.Where(t => t.Date.Date.ToUniversalTime() <= dateFrom.Value.Date.ToUniversalTime()).Sum(t => t.Amount);
+                result[account.ID].History[dateFrom.Value.ToUniversalTime().Date] = allTransactions.Where(t => t.Date.ToUniversalTime().Date <= dateFrom.Value.ToUniversalTime().Date).Sum(t => t.Amount);
 
                 foreach (IGrouping<DateTime, Transaction> dateGroup in dateGroups.OrderBy(d => d.Key))
                 {
                     // Calculate and set the dates balance
-                    decimal accountBalance = allTransactions.Where(t => t.Date.Date.ToUniversalTime() <= dateGroup.Key.Date.ToUniversalTime()).Sum(t => t.Amount);
-                    result[account.ID].History[dateGroup.Key.Date.ToUniversalTime()] = accountBalance;
+                    decimal accountBalance = allTransactions.Where(t => t.Date.ToUniversalTime().Date <= dateGroup.Key.ToUniversalTime().Date).Sum(t => t.Amount);
+                    result[account.ID].History[dateGroup.Key.ToUniversalTime().Date] = accountBalance;
                     
                     // Set all older values that are null to the previous value. This accounts for when the were gaps where no transactions happened
-                    decimal? previousValue = result[account.ID].History.OrderByDescending(h => h.Key).Where(h => h.Value != null && h.Key < dateGroup.Key)
+                    decimal? previousValue = result[account.ID].History.OrderByDescending(h => h.Key).Where(h => h.Value != null && h.Key.Date < dateGroup.Key.Date)
                         .Select(h => h.Value).FirstOrDefault(0);
-                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key.Date.ToUniversalTime()).ToList();
+                    var nonSet = result[account.ID].History.Where(h => h.Value == null && h.Key < dateGroup.Key.ToUniversalTime().Date).ToList();
                     for (int i = 0; i < nonSet.Count; i++)
                     {
                         result[account.ID].History[nonSet[i].Key] = previousValue;
@@ -100,7 +100,7 @@ namespace FinanceAPIData
                 dateFrom ??= DateTime.Today.AddYears(-1);
                 for (DateTime date = dateFrom.Value.Date; date <= DateTime.Today; date = date.AddDays(1))
                 {
-                    History.Add(date, null);
+                    History.Add(date.ToUniversalTime().Date, null);
                 }
             }
         }
