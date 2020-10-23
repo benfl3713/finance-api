@@ -50,14 +50,15 @@ namespace FinanceAPI
 			services.AddControllers().AddNewtonsoftJson(options => options.UseMemberCasing());
 			services.Configure<AppSettings>(Configuration);
 			services.Configure<TaskSettings>(Configuration.GetSection("TaskSettings"));
-			services.Configure<TaskSettings>(settings =>
-			{
-				settings.TrueLayer_ClientID = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientID));
-				settings.TrueLayer_ClientSecret = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientSecret));
-				settings.TrueLayer_Mode = Configuration.GetValue<string>(nameof(settings.TrueLayer_Mode));
-				settings.MongoDB_ConnectionString = Configuration.GetValue<string>(nameof(settings.MongoDB_ConnectionString)) ?? "mongodb://localhost";
-				settings.LogoOverrides = Configuration.GetValue<Dictionary<string, Logo>>(nameof(settings.LogoOverrides));
-			});
+			// services.Configure<TaskSettings>(settings =>
+			// {
+			// 	settings.TrueLayer_ClientID = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientID));
+			// 	settings.TrueLayer_ClientSecret = Configuration.GetValue<string>(nameof(settings.TrueLayer_ClientSecret));
+			// 	settings.TrueLayer_Mode = Configuration.GetValue<string>(nameof(settings.TrueLayer_Mode));
+			// 	settings.MongoDB_ConnectionString = Configuration.GetValue<string>(nameof(settings.MongoDB_ConnectionString)) ?? "mongodb://localhost";
+			// 	settings.LogoOverrides = Configuration.GetValue<Dictionary<string, Logo>>(nameof(AppSettings.LogoOverrides));
+			// });
+			services.Configure<TaskSettings>(Configuration);
 			
 
 			SetupLogging(services);

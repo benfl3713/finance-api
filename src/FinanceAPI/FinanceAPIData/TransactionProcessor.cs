@@ -56,7 +56,13 @@ namespace FinanceAPIData
 				return false;
 
 			transaction.Owner = "User";
-			return _transactionDataService.UpdateTransaction(transaction);
+			bool result =  _transactionDataService.UpdateTransaction(transaction);
+
+			Task logoTask = new Task($"Logo Calculator [{transaction.AccountName}]", transaction.ClientID, TaskType.LogoCalculator, DateTime.Now) {Data = new Dictionary<string, object> {{"ClientID", transaction.ClientID}, {"AccountID", transaction.AccountID}}};
+			//new TransactionLogoCalculator()
+			BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
+
+			return result;
 		}
 
 		public bool DeleteTransaction(string transactionId, string clientId)

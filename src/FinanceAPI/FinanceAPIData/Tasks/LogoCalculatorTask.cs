@@ -9,16 +9,16 @@ namespace FinanceAPIData.Tasks
         {
         }
 
-        public override void Execute(Task Task)
+        public override void Execute(Task task)
         {
             var calculator = new TransactionLogoCalculator(Settings.MongoDB_ConnectionString, Settings.LogoOverrides);
-            var filterClientId = Task.Data["ClientID"]?.ToString();
-            var filterAccountId = Task.Data["AccountID"]?.ToString();
+            var filterClientId = task.Data["ClientID"]?.ToString();
+            var filterAccountId = task.Data["AccountID"]?.ToString();
             
             // Run Calculator
             calculator.Run(filterClientId, filterAccountId);
             
-            base.Execute(Task);
+            base.Execute(task);
         }
     }
 }
