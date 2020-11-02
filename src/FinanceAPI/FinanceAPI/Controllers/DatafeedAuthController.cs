@@ -52,7 +52,7 @@ namespace FinanceAPI.Controllers
                 string sessionID = stateStrV[0];
                 string code = codeStrV[0];
                 var location = new Uri($"{(Request.IsHttps ? "https" : "http")}://{Request.Host}{Request.Path}{Request.QueryString}");
-                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers)}");
+                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers).Value}");
 
                 var clientId = _jwtMiddleware.GetClientIdFromToken(sessionID);
                 if (clientId == null)
