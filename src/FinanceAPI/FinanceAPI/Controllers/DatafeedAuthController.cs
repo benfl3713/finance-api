@@ -53,6 +53,7 @@ namespace FinanceAPI.Controllers
                 string code = codeStrV[0];
                 var location = new Uri($"{(Request.IsHttps ? "https" : "http")}://{Request.Host}{Request.Path}{Request.QueryString}");
                 Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers).Value}");
+                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers["X-Forwarded-Proto"]).Value}");
 
                 var clientId = _jwtMiddleware.GetClientIdFromToken(sessionID);
                 if (clientId == null)
