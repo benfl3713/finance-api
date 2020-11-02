@@ -51,15 +51,17 @@ namespace FinanceAPI.Controllers
 
                 string sessionID = stateStrV[0];
                 string code = codeStrV[0];
-                var location = new Uri($"{(Request.IsHttps ? "https" : "http")}://{Request.Host}{Request.Path}{Request.QueryString}");
-                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers).Value}");
-                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"{Json(Request.Headers["X-Forwarded-Proto"]).Value}");
+
+                string scheme = Request.Scheme;
+                if (!string.IsNullOrEmpty(Request.Headers["X-Forwarded-Proto"]))
+                    scheme = Request.Headers["X-Forwarded-Proto"];
+
+                var location = new Uri($"{scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
 
                 var clientId = _jwtMiddleware.GetClientIdFromToken(sessionID);
                 if (clientId == null)
                     return "Invalid User";
-
-                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"Url: [{location.AbsoluteUri}] Form: {Json(form)}");
+                
 
                 TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.MongoDB_ConnectionString, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
                 return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
