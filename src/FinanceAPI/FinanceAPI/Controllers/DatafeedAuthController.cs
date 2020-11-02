@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Serilog.Events;
 
 namespace FinanceAPI.Controllers
 {
@@ -55,6 +56,8 @@ namespace FinanceAPI.Controllers
                 var clientId = _jwtMiddleware.GetClientIdFromToken(sessionID);
                 if (clientId == null)
                     return "Invalid User";
+
+                Serilog.Log.Logger?.Write(LogEventLevel.Error, $"Url: [{location.AbsoluteUri}] Form: {Json(form)}");
 
                 TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.MongoDB_ConnectionString, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
                 return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
