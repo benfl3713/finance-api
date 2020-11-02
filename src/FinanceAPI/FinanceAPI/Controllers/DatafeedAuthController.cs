@@ -51,7 +51,7 @@ namespace FinanceAPI.Controllers
 
                 string sessionID = stateStrV[0];
                 string code = codeStrV[0];
-                var location = new Uri($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
+                var location = new Uri($"{(Request.IsHttps ? "https" : "http")}://{Request.Host}{Request.Path}{Request.QueryString}");
 
                 var clientId = _jwtMiddleware.GetClientIdFromToken(sessionID);
                 if (clientId == null)
