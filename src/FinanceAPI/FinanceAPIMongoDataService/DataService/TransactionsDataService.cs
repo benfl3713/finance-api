@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace FinanceAPIMongoDataService.DataService
@@ -57,11 +58,11 @@ namespace FinanceAPIMongoDataService.DataService
 			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
 		}
 
-		public List<OldTransaction> GetOldTransactions(string clientId)
+		public List<BsonDocument> GetOldTransactions(string clientId)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
-			var filter = Builders<OldTransaction>.Filter.Eq("ClientID", clientId);
-			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
+			var filter = Builders<BsonDocument>.Filter.Eq("ClientID", clientId);
+			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => DateTime.Parse(t["Date"].ToString())).ToList();
 		}
 
 		public bool ImportDatafeedTransaction(Transaction transaction)

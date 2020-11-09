@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FinanceAPICore;
+using MongoDB.Bson;
 
 namespace FinanceAPIData
 {
@@ -15,28 +16,31 @@ namespace FinanceAPIData
                 var clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(connectionString);
                 foreach (Client client in clientDataService.GetAllClients())
                 {
-                    List<OldTransaction> oldTransactions = transactionDataService.GetOldTransactions(client.ID);
-                    foreach (OldTransaction oldTransaction in oldTransactions)
+                    List<BsonDocument> oldTransactions = transactionDataService.GetOldTransactions(client.ID);
+                    foreach (BsonDocument oldTransaction in oldTransactions)
                     {
+                        if(oldTransaction["_id"].BsonType == BsonType.Document)
+                            continue;
+                        
                         Transaction newTransaction = new Transaction
                         {
-                            ID = oldTransaction.ID,
-                            Amount = oldTransaction.Amount,
-                            Category = oldTransaction.Category,
-                            Currency = oldTransaction.Currency,
-                            Date = oldTransaction.Date,
-                            Logo = oldTransaction.Logo,
-                            Merchant = oldTransaction.Merchant,
-                            Note = oldTransaction.Note,
-                            Owner = oldTransaction.Owner,
-                            Status = oldTransaction.Status,
-                            Type = oldTransaction.Type,
-                            Vendor = oldTransaction.Vendor,
-                            AccountID = oldTransaction.AccountID,
-                            ClientID = oldTransaction.ClientID
+                            ID = oldTransaction["_id"].ToString(),
+                            Amount = decimal.Parse(oldTransaction["Amount"].ToString()),
+                            Category = oldTransaction["Category"].ToString(),
+                            Currency = oldTransaction["Currency"].ToString(),
+                            Date = DateTime.Parse(oldTransaction["Date"].ToString()),
+                            Logo = null,
+                            Merchant = oldTransaction["Merchant"].ToString(),
+                            Note = oldTransaction["Note"].ToString(),
+                            Owner = oldTransaction["Owner"].ToString(),
+                            Status = Status.SETTLED,
+                            Type = oldTransaction["Type"].ToString(),
+                            Vendor = oldTransaction["Vendor"].ToString(),
+                            AccountID = oldTransaction["AccountID"].ToString(),
+                            ClientID = oldTransaction["ClientID"].ToString()
                         };
 
-                        transactionDataService.DeleteOldTransaction(oldTransaction.ID, client.ID);
+                        transactionDataService.DeleteOldTransaction(oldTransaction["_id"].ToString(), client.ID);
                         transactionDataService.InsertTransaction(newTransaction);
                     }
                 }
