@@ -94,7 +94,7 @@ namespace FinanceAPI
 			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.IsDemo)
 			{
 				Serilog.Log.Logger?.Write(LogEventLevel.Information, "FinanceAPI running in Demo Mode");
-				RecurringJob.AddOrUpdate<DemoClearDownTask>("Demo-DemoClearDownTask", r => r.Execute(null), "59 23 * * Sun");
+				RecurringJob.AddOrUpdate<DemoClearDownTask>("Demo-DemoClearDownTask", r => r.Execute(new FinanceAPICore.Tasks.Task("DemoClearDownTask", null, TaskType.DemoClearDownTask, DateTime.Now)), "59 23 * * Sun");
 			}
 			else
 			{
