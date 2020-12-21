@@ -35,7 +35,7 @@ namespace FinanceAPIData
 						continue;
 
 					List<Transaction> transactions = string.IsNullOrEmpty(accountId) ? _transactionsDataService.GetTransactions(client.ID) : _transactionsDataService.GetTransactions(client.ID).Where(t => t.AccountID == accountId).ToList();
-					Parallel.ForEach(transactions, t => CalculateLogo(t));
+					Parallel.ForEach(transactions, t => CalculateLogo(ref t));
 					transactions.Where(t => !string.IsNullOrEmpty(t.Logo)).ToList().ForEach(t => _transactionsDataService.UpdateTransactionLogo(t.ID, t.Logo));
 				}
 			}
@@ -45,7 +45,12 @@ namespace FinanceAPIData
 			}
 		}
 
-		private void CalculateLogo(Transaction transaction)
+		public void RunForTransaction(Transaction transaction)
+		{
+			CalculateLogo(ref transaction);
+		}
+
+		private void CalculateLogo(ref Transaction transaction)
 		{
 			if (!string.IsNullOrEmpty(transaction.Logo))
 				return;

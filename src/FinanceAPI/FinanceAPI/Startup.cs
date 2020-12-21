@@ -124,10 +124,10 @@ namespace FinanceAPI
 		{
 			services.AddTransient(x => new ClientProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new AccountProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new TransactionProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new TransactionProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<TransactionLogoCalculator>()));
 			services.AddTransient(x => new AuthenticationProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 			services.AddTransient(x => new DatafeedProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new StatisticsProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient(x => new StatisticsProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<TransactionLogoCalculator>()));
 			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IBackgroundJobClient>()));
 			services.AddTransient(x => new GoalProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
 		}

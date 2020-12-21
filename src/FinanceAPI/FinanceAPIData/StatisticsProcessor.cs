@@ -11,9 +11,9 @@ namespace FinanceAPIData
     {
         private TransactionProcessor _transactionProcessor;
         private AccountProcessor _accountProcessor;
-        public StatisticsProcessor(string connectionString)
+        public StatisticsProcessor(string connectionString, TransactionLogoCalculator logoCalculator)
         {
-            _transactionProcessor = new TransactionProcessor(connectionString);
+            _transactionProcessor = new TransactionProcessor(connectionString, logoCalculator);
             _accountProcessor = new AccountProcessor(connectionString);
         }
         

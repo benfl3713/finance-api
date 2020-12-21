@@ -22,8 +22,8 @@ Also You can
 
 # Future Features
 - Statistic Calculations based of transaction data
-- A personal finance manager that uses this api
 - A different database technology (The current design is based on interfaces which will allow different databases to be used)
+- Import different format files (Export from bank and then upload to this api)
 
 # Need Help?
 
@@ -33,7 +33,7 @@ Also You can
 If you want to run the finance manager and finance api and database all together then you can use the following docker-compose configuration.
 (This assumes you are running on windows. Just modify the volume mappings if you're using linux or mac os to a different host directory)
 
-```
+```yaml
 version: "3"
 
 services:
