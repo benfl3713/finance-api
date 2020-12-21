@@ -12,6 +12,7 @@ using FinanceAPICore;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
+using FinanceAPIData.Tasks;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard;
@@ -89,7 +90,16 @@ namespace FinanceAPI
 				app.UseDeveloperExceptionPage();
 			}
 
-			new TransactionMigrater().Run(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString);
+			// new TransactionMigrater().Run(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString);
+			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.IsDemo)
+			{
+				Serilog.Log.Logger?.Write(LogEventLevel.Information, "FinanceAPI running in Demo Mode");
+				RecurringJob.AddOrUpdate<DemoClearDownTask>("Demo-DemoClearDownTask", r => r.Execute(null), "59 23 * * Sun");
+			}
+			else
+			{
+				RecurringJob.RemoveIfExists("Demo-DemoClearDownTask");
+			}
 
 			// global cors policy
 			app.UseCors();

@@ -18,9 +18,9 @@ namespace FinanceAPIData.Tasks
 		public virtual event EventHandler Completed;
 		protected TaskSettings Settings;
 
-		public virtual void Execute(Task Task)
+		public virtual void Execute(Task task)
 		{
-			Log($"{Task.Name} has finished");
+			Log($"{task.Name} has finished");
 			Completed?.Invoke(this, new EventArgs());
 		}
 

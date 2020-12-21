@@ -21,5 +21,7 @@ namespace FinanceAPI
 		/// <a href="https://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization">https://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization</a>
 		/// </summary>
 		public bool EnableHangfireDashboard { get; set; } = false;
+
+		public bool IsDemo { get; set; } = false;
 	}
 }
