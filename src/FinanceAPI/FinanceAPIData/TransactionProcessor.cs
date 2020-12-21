@@ -33,7 +33,7 @@ namespace FinanceAPIData
 				throw new Exception("Account does not exist");
 
 			transaction.Owner = "User";
-			_logoCalculator.RunForTransaction(transaction);
+			transaction = _logoCalculator.RunForTransaction(transaction);
 
 			string result = _transactionDataService.InsertTransaction(transaction) ? transaction.ID : null;
 
@@ -59,7 +59,7 @@ namespace FinanceAPIData
 				return false;
 
 			transaction.Owner = "User";
-			_logoCalculator.RunForTransaction(transaction);
+			transaction = _logoCalculator.RunForTransaction(transaction);
 			bool result =  _transactionDataService.UpdateTransaction(transaction);
 
 			Task logoTask = new Task($"Logo Calculator [{transaction.AccountName}]", transaction.ClientID, TaskType.LogoCalculator, DateTime.Now) {Data = new Dictionary<string, object> {{"ClientID", transaction.ClientID}, {"AccountID", transaction.AccountID}}};

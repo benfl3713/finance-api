@@ -45,9 +45,10 @@ namespace FinanceAPIData
 			}
 		}
 
-		public void RunForTransaction(Transaction transaction)
+		public Transaction RunForTransaction(Transaction transaction)
 		{
 			CalculateLogo(ref transaction);
+			return transaction;
 		}
 
 		private void CalculateLogo(ref Transaction transaction)
@@ -57,7 +58,7 @@ namespace FinanceAPIData
 
 			if (_logoOverrides != null)
 			{
-				foreach (var lo in _logoOverrides.Where(l => l.Value.ForceOverride == true))
+				foreach (var lo in _logoOverrides.Where(l => l.Value.ForceOverride))
 				{
 					if ((lo.Value.Types.Contains("Vendor") && lo.Key.Like(transaction.Vendor))
 						|| (lo.Value.Types.Contains("Merchant") && lo.Key.Like(transaction.Merchant))
@@ -83,6 +84,23 @@ namespace FinanceAPIData
 				{
 					transaction.Logo = testLogo;
 					return;
+				}
+
+				testLogo = $"https://logo.clearbit.com/{transaction.Vendor.Replace("'", "").Replace(" ", "").Replace(",", "").Split(' ')[0]}.com";
+				if (DoesImageExit(testLogo))
+				{
+					transaction.Logo = testLogo;
+					return;
+				}
+
+				if (transaction.Vendor.Contains("Visa Debit Transaction "))
+				{
+					testLogo = $"https://logo.clearbit.com/{transaction.Vendor.Replace("'", "").Replace(" ", "").Replace(",", "").Replace("Visa Debit Transaction ", "")}.com";
+					if (DoesImageExit(testLogo))
+					{
+						transaction.Logo = testLogo;
+						return;
+					}
 				}
 			}
 
