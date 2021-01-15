@@ -157,7 +157,7 @@ namespace FinanceAPIMongoDataService
 			{
 				var collection = db.GetCollection<T>(table);
 				var result = collection.DeleteMany(filter);
-				return result.DeletedCount > 0;
+				return result.IsAcknowledged;
 			}
 			catch (Exception ex)
 			{
