@@ -29,6 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
@@ -80,6 +81,11 @@ namespace FinanceAPI
 					builder.AllowAnyHeader();
 				});
 			});
+
+			services.AddSwaggerGen(c =>
+			{
+				c.SwaggerDoc("v1", new OpenApiInfo() {Title = "Finance API", Description = "💲💰 Personal Finance Manager API"});
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -109,6 +115,13 @@ namespace FinanceAPI
 			app.UseExceptionHandlingMiddleware();
 
 			app.UseRouting();
+
+			app.UseSwagger();
+
+			app.UseSwaggerUI(c =>
+			{
+				c.SwaggerEndpoint("/swagger/v1/swagger.json", "Finance API");
+			});
 
 			app.UseEndpoints(endpoints =>
 			{

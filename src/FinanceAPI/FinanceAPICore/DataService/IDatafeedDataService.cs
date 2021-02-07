@@ -7,6 +7,7 @@ namespace FinanceAPICore.DataService
 	public interface IDatafeedDataService
 	{
 		public List<Datafeed> GetDatafeeds(string clientId);
+		public Datafeed GetDatafeedByAccessKey(string encryptedAccesskey);
 		public bool AddUpdateClientDatafeed(Datafeed datafeed);
 		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID);
 		public bool UpdateAccessKey(string newAccessKey, string newRefreshToken, string oldAccessKey, DateTime lastUpdated);

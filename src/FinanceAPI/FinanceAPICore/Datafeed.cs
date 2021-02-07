@@ -16,6 +16,7 @@ namespace FinanceAPICore
         public string AccessKey { get; set; }
         public string RefreshKey { get; set; }
         public DateTime LastUpdated { get; set; }
+        public bool NeedsReconnecting { get; set; }
 
 
 		public Datafeed()

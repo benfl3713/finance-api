@@ -33,7 +33,7 @@ namespace FinanceAPI.Controllers
 			Client client = _authenticationProcessor.AuthenticateClient(model.Username, model.Password);
 
 			if (client == null)
-				return BadRequest(new { message = "Username or password is incorrect" });
+				return Error.Generate("Username or password is incorrect", Error.ErrorType.InvalidCredentials);
 
 			var token = generateJwtToken(client);
 

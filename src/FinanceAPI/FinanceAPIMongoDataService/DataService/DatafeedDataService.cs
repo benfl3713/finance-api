@@ -42,10 +42,21 @@ namespace FinanceAPIMongoDataService.DataService
 			return database.DeleteRecord(externalAccountMappingsTable, $"{accountID}_{externalAccountID}", filter, "_id");
 		}
 
+		public Datafeed GetDatafeedByAccessKey(string encryptedAccessKey)
+		{
+			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			var filter = Builders<Datafeed>.Filter.Eq("AccessKey", encryptedAccessKey);
+			var result =  database.LoadRecordsByFilter(datafeedTableName, filter);
+			if (result.Count == 1)
+				return result[0];
+
+			return null;
+		}
+
 		public bool AddUpdateClientDatafeed(Datafeed datafeed)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
-			return database.UpsertRecord(datafeedTableName, datafeed, datafeed._id);
+			return database.UpsertRecord(datafeedTableName, datafeed, datafeed._id, idField: "_id");
 		}
 
 		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID)

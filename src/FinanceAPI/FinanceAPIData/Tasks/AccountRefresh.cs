@@ -58,20 +58,23 @@ namespace FinanceAPIData.Tasks
 
             AccountSettings accountSettings = _accountDataService.GetAccountSettings(accountID);
 
-            decimal totalAccountBalance = 0;
+            decimal? totalAccountBalance = null;
             decimal totalAvailableAccountBalance = 0;
 
             foreach (var externalAccount in externalAccounts)
 			{
-                totalAccountBalance += ProcessExternalAccount(externalAccount, datafeedApi, account, out decimal availableBalance);
+                var balance =  ProcessExternalAccount(externalAccount, datafeedApi, account, out decimal availableBalance);
+                if (balance.HasValue && totalAccountBalance == null)
+                    totalAccountBalance = 0;
+                totalAccountBalance += balance;
                 totalAvailableAccountBalance += availableBalance;
             }
 
             // Reload account to get new balance
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
-            if(accountSettings != null && accountSettings.GenerateAdjustments)
-                BalanceAccount(account, totalAccountBalance);
+            if(accountSettings != null && accountSettings.GenerateAdjustments && totalAccountBalance.HasValue)
+                BalanceAccount(account, totalAccountBalance.Value);
             
             // Enqueue task to calculate logos on new transactions
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
@@ -84,7 +87,7 @@ namespace FinanceAPIData.Tasks
             base.Execute(Task);
         }
 
-        private decimal ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance)
+        private decimal? ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance)
 		{
             string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
             availableBalance = 0;
@@ -94,7 +97,7 @@ namespace FinanceAPIData.Tasks
                 return 0;
             }
 
-            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal accountBalance, out availableBalance);
+            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal? accountBalance, out availableBalance);
             Log($"Fetched [{transactions.Count}] transactions from provider");
 
             List<Transaction> sortedTransactions = new List<Transaction>();

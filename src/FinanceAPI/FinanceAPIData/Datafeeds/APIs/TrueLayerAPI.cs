@@ -6,7 +6,7 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
+using System.Net;
 using Serilog.Events;
 
 namespace FinanceAPIData.Datafeeds.APIs
@@ -44,7 +44,7 @@ namespace FinanceAPIData.Datafeeds.APIs
             }
         }
 
-        public bool RegisterNewClient(string publicToken, string clientId, string requestUrl)
+        public bool RegisterNewClient(string publicToken, string clientId, string requestUrl, string existingIdToReplace = null)
         {
             var client = new RestClient($"{_AuthUrl}/connect/token");
             var request = new RestRequest(Method.POST);
@@ -62,6 +62,8 @@ namespace FinanceAPIData.Datafeeds.APIs
                 if (!string.IsNullOrEmpty(accessKey))
                 {
                     Datafeed datafeed = new Datafeed(clientId, datafeedName, vendorID, vendorName, DateTime.Now, SecurityService.EncryptTripleDES(accessKey), SecurityService.EncryptTripleDES(refreshToken));
+                    if (!string.IsNullOrEmpty(existingIdToReplace))
+                        datafeed._id = existingIdToReplace;
                     return _datafeedDataService.AddUpdateClientDatafeed(datafeed);
                 }
             }
@@ -92,6 +94,12 @@ namespace FinanceAPIData.Datafeeds.APIs
                 {
                     return GetProviderInfo(SecurityService.DecryptTripleDES(RefreshTokenExchange(SecurityService.EncryptTripleDES(accesskey))), out providerName, out providerId, false);
                 }
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    MarkConnectionAsNeedingReconnecting(SecurityService.EncryptTripleDES(accesskey));
+                    return false;
+                }
+                
             }
             catch (Exception e)
             {
@@ -117,6 +125,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 }
                 else if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     return accounts;
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
+                    return accounts;
+                }
 
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                 var jsonAccounts = objContent["results"];
@@ -135,7 +148,7 @@ namespace FinanceAPIData.Datafeeds.APIs
             return accounts;
         }
 
-        public List<Transaction> GetAccountTransactions(string externalAccountID, string encryptedAccessKey, out decimal accountBalance, out decimal availableBalance, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
+        public List<Transaction> GetAccountTransactions(string externalAccountID, string encryptedAccessKey, out decimal? accountBalance, out decimal availableBalance, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
         {
             List<Transaction> transactions = new List<Transaction>();
             accountBalance = GetAccountBalance(externalAccountID, ref encryptedAccessKey, out availableBalance);
@@ -152,6 +165,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
                 {
                     return GetAccountTransactions(externalAccountID, RefreshTokenExchange(encryptedAccessKey), out accountBalance, out availableBalance, dateFrom = null, dateTo = null, false);
+                }
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
+                    return transactions;
                 }
                 else if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     return transactions;
@@ -190,6 +208,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 }
                 else if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     return transactions;
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
+                    return transactions;
+                }
 
 
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
@@ -248,7 +271,7 @@ namespace FinanceAPIData.Datafeeds.APIs
             }
         }
 
-        private decimal GetAccountBalance(string externalAccountID, ref string encryptedAccessKey, out decimal availableBalance, bool refreshToken = true)
+        private decimal? GetAccountBalance(string externalAccountID, ref string encryptedAccessKey, out decimal availableBalance, bool refreshToken = true)
         {
             availableBalance = 0;
             try
@@ -270,13 +293,27 @@ namespace FinanceAPIData.Datafeeds.APIs
                     encryptedAccessKey = RefreshTokenExchange(encryptedAccessKey);
                     return GetAccountBalance(externalAccountID, ref encryptedAccessKey, out availableBalance, false);
                 }
+                else
+                {
+                    MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
 
-            return 0;
+            return null;
+        }
+
+        private void MarkConnectionAsNeedingReconnecting(string encryptedAccessKey)
+        {
+            Datafeed datafeed = _datafeedDataService.GetDatafeedByAccessKey(encryptedAccessKey);
+            if (datafeed != null)
+            {
+                datafeed.NeedsReconnecting = true;
+                _datafeedDataService.AddUpdateClientDatafeed(datafeed);
+            }
         }
 
         private string RefreshTokenExchange(string oldAccessKey)

@@ -30,7 +30,7 @@ namespace FinanceAPI.Controllers
 			string accountId = _accountProcessor.InsertAccount(account);
 			if (accountId != null)
 				return Json(accountId);
-			return BadRequest();
+			return Error.Generate("Failed to Create Account", Error.ErrorType.CreateFailure);
 		}
 
 		[HttpPut]
@@ -39,11 +39,11 @@ namespace FinanceAPI.Controllers
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Account account = Account.CreateFromJson(jsonAccount, clientId);
 			if (string.IsNullOrEmpty(account.ID))
-				return BadRequest("Account ID is required");
+				return Error.Generate("Account ID required", Error.ErrorType.MissingParameters);
 
 			if (_accountProcessor.UpdateAccount(account))
 				return Json("Account Updated");
-			return BadRequest();
+			return Error.Generate("Failed to Update Account", Error.ErrorType.UpdateFailure);
 		}
 
 		[HttpGet("{accountId}")]
@@ -52,7 +52,7 @@ namespace FinanceAPI.Controllers
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Account account = _accountProcessor.GetAccountById(accountId, clientId);
 			if (account == null)
-				return BadRequest("Could not find account");
+				return Error.Generate("Could not find account", Error.ErrorType.NotExist);
 			return Json(account);
 		}
 
@@ -62,7 +62,7 @@ namespace FinanceAPI.Controllers
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			if (_accountProcessor.DeleteAccount(accountId, clientId))
 				return Json("Account Deleted");
-			return BadRequest("Failed to delete Account");
+			return Error.Generate("Failed to delete Account", Error.ErrorType.DeleteFailure);
 		}
 
 		[HttpGet("{accountId}/[action]")]

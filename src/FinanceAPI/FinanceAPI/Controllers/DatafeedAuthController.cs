@@ -51,6 +51,14 @@ namespace FinanceAPI.Controllers
 
                 string sessionID = stateStrV[0];
                 string code = codeStrV[0];
+                string existingId = null;
+
+                if (sessionID.Contains("|"))
+                {
+                    string[] stateParts = sessionID.Split('|');
+                    sessionID = stateParts[0];
+                    existingId = stateParts[1];
+                }
 
                 string scheme = Request.Scheme;
                 if (!string.IsNullOrEmpty(Request.Headers["X-Forwarded-Proto"]))
@@ -64,7 +72,7 @@ namespace FinanceAPI.Controllers
                 
 
                 TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.MongoDB_ConnectionString, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
-                return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
+                return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri, existingId) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
 
             }
             catch (Exception e)
