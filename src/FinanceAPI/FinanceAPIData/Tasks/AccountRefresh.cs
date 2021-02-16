@@ -115,10 +115,10 @@ namespace FinanceAPIData.Tasks
             sortedTransactions = VendorAlgorithm(sortedTransactions);
 
             // Remove any pending transactions that have now been settled (Pending transaction not supplied by provider anymore indicates that  it has settled under a different transaction id)
-            var exitingPendingTransactions = _transactionDataService.GetTransactions(account.ClientID).Where(t => t.Status == Status.PENDING && t.Owner != "User");
+            var exitingPendingTransactions = _transactionDataService.GetTransactions(account.ClientID).Where(t => t.Status == Status.PENDING && (t.Owner != "User" || t.Source != "User"));
 			foreach (var transaction in exitingPendingTransactions)
 			{
-                if (!sortedTransactions.Where(t => t.Status == Status.PENDING).Any(t => t.ID == transaction.ID))
+                if (sortedTransactions.Where(t => t.Status == Status.PENDING).All(t => t.ID != transaction.ID))
                     _transactionDataService.DeleteTransaction(transaction.ID, transaction.ClientID);
 			}
 

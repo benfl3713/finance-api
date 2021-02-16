@@ -44,6 +44,8 @@ namespace FinanceAPICore
         public Status Status = Status.SETTLED;
         [JsonIgnore]
         public string Owner = "User";
+        [JsonIgnore]
+        public string Source = "User";
 
 
         public Transaction()

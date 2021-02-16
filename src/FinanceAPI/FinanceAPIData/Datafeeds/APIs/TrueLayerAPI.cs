@@ -178,6 +178,8 @@ namespace FinanceAPIData.Datafeeds.APIs
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                 if (objContent["results"] != null)
                     DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions);
+                
+                transactions.ForEach(t => t.Source = "TrueLayerAPI");
             }
             catch (Exception e)
             {
@@ -222,6 +224,7 @@ namespace FinanceAPIData.Datafeeds.APIs
                 foreach (Transaction transaction in transactions)
                 {
                     transaction.Status = Status.PENDING;
+                    transaction.Source = "TrueLayerAPI";
                 }
 
                 transactions.ForEach(t => t.Status = Status.PENDING);
