@@ -17,6 +17,14 @@ namespace FinanceAPI.Controllers
         {
             _goalProcessor = goalProcessor;
         }
+
+        [HttpGet]
+        public IActionResult GetGoals()
+        {
+            string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+            return Json(_goalProcessor.GetGoals(clientId));
+        }
+        
         [HttpPost]
         public IActionResult InsertGoal([FromBody] JObject jGoal)
         {

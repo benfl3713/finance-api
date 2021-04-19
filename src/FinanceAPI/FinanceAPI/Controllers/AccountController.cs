@@ -22,7 +22,15 @@ namespace FinanceAPI.Controllers
 		{
 			_accountProcessor = accountProcessor;
 		}
-		[HttpPost]
+
+		[HttpGet]
+		public IActionResult GetAccounts()
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_accountProcessor.GetAccounts(clientId));
+		}
+		
+		[HttpPost("{accountId}")]
 		public IActionResult InsertAccount([FromBody] JObject jsonAccount)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
@@ -33,7 +41,7 @@ namespace FinanceAPI.Controllers
 			return Error.Generate("Failed to Create Account", Error.ErrorType.CreateFailure);
 		}
 
-		[HttpPut]
+		[HttpPut("{accountId}")]
 		public IActionResult UpdateAccount([FromBody] JObject jsonAccount)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();

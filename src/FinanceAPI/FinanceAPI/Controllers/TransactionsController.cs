@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using FinanceAPI.Attributes;
 using FinanceAPICore;
 using FinanceAPIData;
@@ -18,6 +17,14 @@ namespace FinanceAPI.Controllers
 		{
 			_transactionProcessor = transactionProcessor;
 		}
+
+		[HttpGet]
+		public IActionResult GetTransactions(string accountId = null)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_transactionProcessor.GetTransactions(clientId, accountId));
+		}
+		
 		[HttpPost]
 		public IActionResult InsertTransaction([FromBody] JObject jsonTransaction)
 		{
@@ -29,8 +36,8 @@ namespace FinanceAPI.Controllers
 			return BadRequest(transactionId);
 		}
 
-		[HttpPut]
-		public IActionResult UpdateTransaction([FromBody] JObject jsonTransaction)
+		[HttpPut("{transactionId}")]
+		public IActionResult UpdateTransaction([Required][FromBody] JObject jsonTransaction)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			Transaction transaction = Transaction.CreateFromJson(jsonTransaction, clientId);

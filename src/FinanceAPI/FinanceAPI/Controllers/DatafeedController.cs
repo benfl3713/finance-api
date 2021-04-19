@@ -30,6 +30,13 @@ namespace FinanceAPI.Controllers
 			_taskProcessor = taskProcessor;
 		}
 
+		[HttpGet]
+		public IActionResult GetDatafeeds(string datafeedType = null)
+		{
+			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
+			return Json(_datafeedProcessor.GetDatafeeds(clientId, datafeedType));
+		}
+
 		[HttpGet("[action]")]
 		public IActionResult GetExternalAccounts()
 		{
