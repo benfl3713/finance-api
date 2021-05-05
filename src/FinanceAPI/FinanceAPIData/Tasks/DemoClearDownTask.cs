@@ -14,11 +14,11 @@ namespace FinanceAPIData.Tasks
         protected IClientDataService _clientDataService;
         private TaskSettings _settings;
         
-        public DemoClearDownTask(IOptions<TaskSettings> settings) : base(settings)
+        public DemoClearDownTask(IOptions<TaskSettings> settings, ITransactionsDataService transactionsDataService, IClientDataService clientDataService) : base(settings)
         {
             _settings = settings.Value;
-            _transactionsDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(_settings.MongoDB_ConnectionString);
-            _clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_settings.MongoDB_ConnectionString);
+            _transactionsDataService = transactionsDataService;
+            _clientDataService = clientDataService;
         }
 
         public override void Execute(Task task)

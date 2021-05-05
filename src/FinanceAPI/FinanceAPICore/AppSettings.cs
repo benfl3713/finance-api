@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FinanceAPICore;
 
-namespace FinanceAPI
+namespace FinanceAPICore
 {
 	public class AppSettings
 	{

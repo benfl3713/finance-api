@@ -21,17 +21,17 @@ namespace FinanceAPIData.Tasks
         private ITransactionsDataService _transactionDataService;
         private Task Task;
 
-        public AccountRefresh(IOptions<TaskSettings> taskSettings): base(taskSettings)
+        public AccountRefresh(IOptions<TaskSettings> taskSettings, IDatafeedDataService datafeedDataService, IAccountDataService accountDataService, ITransactionsDataService transactionsDataService): base(taskSettings)
         {
+            _datafeedDataService = datafeedDataService;
+            _accountDataService = accountDataService;
+            _transactionDataService = transactionsDataService;
         }
         
         public override void Execute(Task task)
         {
             Task = task;
             var args = Task.Data;
-            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(Settings.MongoDB_ConnectionString);
-            _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(Settings.MongoDB_ConnectionString);
-            _transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(Settings.MongoDB_ConnectionString);
 
             if (string.IsNullOrEmpty(args["AccountID"].ToString()))
             {
@@ -48,7 +48,7 @@ namespace FinanceAPIData.Tasks
 
             List<ExternalAccount> externalAccounts =  _datafeedDataService.GetExternalAccounts(Task.ClientID, accountID);
             Account account = _accountDataService.GetAccountById(accountID, Task.ClientID);
-            IDatafeedAPI datafeedApi = new TrueLayerAPI(Settings.MongoDB_ConnectionString, Settings.TrueLayer_ClientID, Settings.TrueLayer_ClientSecret, Settings.TrueLayer_Mode);
+            IDatafeedAPI datafeedApi = new TrueLayerAPI(_datafeedDataService, Settings.TrueLayer_ClientID, Settings.TrueLayer_ClientSecret, Settings.TrueLayer_Mode);
 
             if(account == null || externalAccounts.Count == 0)
 			{

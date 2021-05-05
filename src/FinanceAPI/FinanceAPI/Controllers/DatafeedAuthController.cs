@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FinanceAPI.Attributes;
-using FinanceAPI.Middleware;
+using FinanceAPICore.Attributes;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Middleware;
 using FinanceAPIData.Datafeeds.APIs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Serilog.Events;
 
-namespace FinanceAPI.Controllers
+namespace FinanceAPICore.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
@@ -19,11 +20,13 @@ namespace FinanceAPI.Controllers
 	{
         private JwtMiddleware _jwtMiddleware;
         private AppSettings _appSettings;
-		public DatafeedAuthController(JwtMiddleware jwtMiddleware, IOptions<AppSettings> appSettings)
+        private IDatafeedDataService _datafeedDataService;
+		public DatafeedAuthController(JwtMiddleware jwtMiddleware, IOptions<AppSettings> appSettings, IDatafeedDataService datafeedDataService)
 		{
             _jwtMiddleware = jwtMiddleware;
             _appSettings = appSettings.Value;
-		}
+            _datafeedDataService = datafeedDataService;
+        }
 
         [Authorize]
         [HttpGet("[action]")]
@@ -71,7 +74,7 @@ namespace FinanceAPI.Controllers
                     return "Invalid User";
                 
 
-                TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_appSettings.MongoDB_ConnectionString, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
+                TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_datafeedDataService, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
                 return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri, existingId) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
 
             }

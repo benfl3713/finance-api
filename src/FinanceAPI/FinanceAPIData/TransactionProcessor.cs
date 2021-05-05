@@ -3,7 +3,6 @@ using FinanceAPICore.DataService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using FinanceAPICore.Tasks;
 using FinanceAPIData.Tasks;
 using Hangfire;
@@ -12,15 +11,15 @@ namespace FinanceAPIData
 {
 	public class TransactionProcessor
 	{
-		ITransactionsDataService _transactionDataService;
-		string _connectionString;
-		private TransactionLogoCalculator _logoCalculator;
+		private readonly ITransactionsDataService _transactionDataService;
+		private readonly AccountProcessor _accountProcessor;
+		private readonly TransactionLogoCalculator _logoCalculator;
 
-		public TransactionProcessor(string connectionString, TransactionLogoCalculator logoCalculator)
+		public TransactionProcessor(ITransactionsDataService transactionDataService, AccountProcessor accountProcessor, TransactionLogoCalculator logoCalculator)
 		{
-			_connectionString = connectionString;
 			_logoCalculator = logoCalculator;
-			_transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(_connectionString);
+			_transactionDataService = transactionDataService;
+			_accountProcessor = accountProcessor;
 		}
 		public string InsertTransaction(Transaction transaction)
 		{
@@ -29,7 +28,7 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(transaction.ClientID))
 				return null;
 
-			if (new AccountProcessor(_connectionString).GetAccountById(transaction.AccountID, transaction.ClientID) == null)
+			if (_accountProcessor.GetAccountById(transaction.AccountID, transaction.ClientID) == null)
 				throw new Exception("Account does not exist");
 
 			transaction.Owner = "User";
@@ -49,7 +48,7 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(transactionId))
 				return null;
 			Transaction transaction = _transactionDataService.GetTransactionById(transactionId, clientId);
-			transaction.AccountName = new AccountProcessor(_connectionString).GetAccountNameById(transaction.AccountID, clientId);
+			transaction.AccountName = _accountProcessor.GetAccountNameById(transaction.AccountID, clientId);
 			return transaction;
 		}
 
@@ -92,7 +91,6 @@ namespace FinanceAPIData
 		public void LoadTransactionAccountNames(List<Transaction> transactions, string clientId)
 		{
 			Dictionary<string, string> accountNames = new Dictionary<string, string>();
-			AccountProcessor accountProcessor = new AccountProcessor(_connectionString);
 			foreach (Transaction transaction in transactions)
 			{
 				if (accountNames.ContainsKey(transaction.AccountID))
@@ -101,7 +99,7 @@ namespace FinanceAPIData
 				}
 				else
 				{
-					string accountName = accountProcessor.GetAccountNameById(transaction.AccountID, clientId);
+					string accountName = _accountProcessor.GetAccountNameById(transaction.AccountID, clientId);
 					transaction.AccountName = accountName;
 					accountNames.Add(transaction.AccountID, accountName);
 				}

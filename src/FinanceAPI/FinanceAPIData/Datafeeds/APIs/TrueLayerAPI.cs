@@ -21,9 +21,9 @@ namespace FinanceAPIData.Datafeeds.APIs
 		private string datafeedName = "TRUELAYER";
 
 		public TrueLayerAPI(){}
-		public TrueLayerAPI(string connectionString, string clientId, string clientSecret, string mode)
-		{
-            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(connectionString);
+		public TrueLayerAPI(IDatafeedDataService datafeedDataService, string clientId, string clientSecret, string mode)
+        {
+            _datafeedDataService = datafeedDataService;
             _ClientId = clientId;
             _Secret = clientSecret;
 

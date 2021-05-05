@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FinanceAPI.Middleware
+namespace FinanceAPICore.Middleware
 {
 	public class JwtMiddleware
 	{

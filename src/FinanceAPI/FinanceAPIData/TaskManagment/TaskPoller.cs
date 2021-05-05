@@ -15,12 +15,11 @@ namespace FinanceAPIData.TaskManagment
 		private ITaskDataService _taskDataService;
 		private TaskFactory taskFactory;
 
-		public TaskPoller(IOptions<TaskSettings> taskSettings, IBackgroundJobClient backgroundJobs, TransactionLogoCalculator transactionLogoCalculator)
+		public TaskPoller(IOptions<TaskSettings> taskSettings, IBackgroundJobClient backgroundJobs, TransactionLogoCalculator transactionLogoCalculator, ITaskDataService taskDataService)
 		{
 			_taskSettings = taskSettings.Value;
-			taskFactory = new TaskFactory(backgroundJobs, transactionLogoCalculator);
-
-			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(_taskSettings.MongoDB_ConnectionString);
+			taskFactory = new TaskFactory(backgroundJobs, transactionLogoCalculator, _taskDataService);
+			_taskDataService = taskDataService;
 
 			System.Threading.Tasks.Task threadedTask = new System.Threading.Tasks.Task(() => Start());
 			threadedTask.Start();

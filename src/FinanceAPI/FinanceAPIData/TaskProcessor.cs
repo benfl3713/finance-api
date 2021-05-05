@@ -1,9 +1,7 @@
 ﻿using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using FinanceAPIData.Tasks;
 using Hangfire;
 
@@ -13,19 +11,19 @@ namespace FinanceAPIData
 	{
 		ITaskDataService _taskDataService;
 		private IBackgroundJobClient _backgroundJobs;
-		string _connectionString;
+		private readonly AccountProcessor _accountProcessor;
 
-		public TaskProcessor(string connectionString, IBackgroundJobClient backgroundJobs)
+		public TaskProcessor(ITaskDataService taskDataService, IBackgroundJobClient backgroundJobs, AccountProcessor accountProcessor)
 		{
-			_connectionString = connectionString;
 			_backgroundJobs = backgroundJobs;
-			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(_connectionString);
+			_taskDataService = taskDataService;
+			_accountProcessor = accountProcessor;
 		}
 
 		public bool RefreshAccount(string clientId, string accountId)
 		{
 			// Check if client owns account
-			Account account = new AccountProcessor(_connectionString).GetAccountById(accountId, clientId);
+			Account account = _accountProcessor.GetAccountById(accountId, clientId);
 			if (account == null)
 				return false;
 

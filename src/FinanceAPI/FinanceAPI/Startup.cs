@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
-using FinanceAPI.Middleware;
-using FinanceAPICore;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Middleware;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
@@ -19,23 +14,20 @@ using Hangfire.Dashboard;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
-using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
+using Serilog.Formatting.Compact;
 using MenuItem = ElectronNET.API.Entities.MenuItem;
 
-namespace FinanceAPI
+namespace FinanceAPICore
 {
 	public class Startup
 	{
@@ -65,12 +57,13 @@ namespace FinanceAPI
 
 			SetupLogging(services);
 			SetupHangfire(services);
-			AddProcessors(services);
-			
-			services.AddTransient<JwtMiddleware>();
-			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides));
-			services.AddSingleton(tp => new TaskPoller(tp.GetRequiredService<IOptions<TaskSettings>>(), tp.GetRequiredService<IBackgroundJobClient>(), tp.GetRequiredService<TransactionLogoCalculator>()));
 
+			services.AddTransient<JwtMiddleware>();
+			services.AddSingleton(x => new TransactionLogoCalculator(x.GetRequiredService<ITransactionsDataService>(), x.GetRequiredService<IClientDataService>(), x.GetRequiredService<IOptions<AppSettings>>().Value.LogoOverrides));
+			services.AddSingleton<TaskPoller>();
+
+			AddDataServices(services);
+			AddProcessors(services);
 
 			services.AddCors(options =>
 			{
@@ -84,7 +77,19 @@ namespace FinanceAPI
 
 			services.AddSwaggerGen(c =>
 			{
-				c.SwaggerDoc("v1", new OpenApiInfo() {Title = "Finance API", Description = "💲💰 Personal Finance Manager API"});
+				c.SwaggerDoc("v1", new OpenApiInfo {Title = "Finance API", Description = "💲💰 Personal Finance Manager API"});
+				c.AddSecurityDefinition("JWT Authentication", new OpenApiSecurityScheme
+				{
+					Flows = new OpenApiOAuthFlows
+					{
+						Password = new OpenApiOAuthFlow
+						{
+							AuthorizationUrl = new Uri("/api/Auth/authenticate", UriKind.Relative)
+						}
+					},
+					In = ParameterLocation.Header,
+					Type = SecuritySchemeType.Http
+				});
 			});
 		}
 
@@ -95,6 +100,8 @@ namespace FinanceAPI
 			{
 				app.UseDeveloperExceptionPage();
 			}
+
+			app.UseSerilogRequestLogging();
 
 			// new TransactionMigrater().Run(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString);
 			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.IsDemo)
@@ -145,14 +152,31 @@ namespace FinanceAPI
 
 		private void AddProcessors(IServiceCollection services)
 		{
-			services.AddTransient(x => new ClientProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new AccountProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new TransactionProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<TransactionLogoCalculator>()));
-			services.AddTransient(x => new AuthenticationProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new DatafeedProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
-			services.AddTransient(x => new StatisticsProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<TransactionLogoCalculator>()));
-			services.AddTransient(x => new TaskProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString, x.GetRequiredService<IBackgroundJobClient>()));
-			services.AddTransient(x => new GoalProcessor(x.GetRequiredService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString));
+			services.AddTransient<ClientProcessor>();
+			services.AddTransient<AccountProcessor>();
+			services.AddTransient<TransactionProcessor>();
+			services.AddTransient<AuthenticationProcessor>();
+			services.AddTransient<DatafeedProcessor>();
+			services.AddTransient<StatisticsProcessor>();
+			services.AddTransient<TaskProcessor>();
+			services.AddTransient<GoalProcessor>();
+			services.AddTransient<NotificationProcessor>();
+		}
+
+		private void AddDataServices(IServiceCollection services)
+		{
+			CreateDataServiceTransient<IClientDataService, FinanceAPIMongoDataService.DataService.ClientDataService>(services);
+			CreateDataServiceTransient<IAccountDataService, FinanceAPIMongoDataService.DataService.AccountDataService>(services);
+			CreateDataServiceTransient<ITransactionsDataService, FinanceAPIMongoDataService.DataService.TransactionsDataService>(services);
+			CreateDataServiceTransient<IDatafeedDataService, FinanceAPIMongoDataService.DataService.DatafeedDataService>(services);
+			CreateDataServiceTransient<ITaskDataService, FinanceAPIMongoDataService.DataService.TaskDataService>(services);
+			CreateDataServiceTransient<IGoalDataService, FinanceAPIMongoDataService.DataService.GoalDataService>(services);
+		}
+
+		private void CreateDataServiceTransient<TInterface, TDataService>(IServiceCollection services) where TDataService : BaseDataService, TInterface where TInterface : class
+		{
+			// ReSharper disable once RedundantExplicitParamsArrayCreation
+			services.AddTransient<TInterface, TDataService>(x => (TDataService) Activator.CreateInstance(typeof(TDataService), x.GetRequiredService<IOptions<AppSettings>>()));
 		}
 
 		private void SetupLogging(IServiceCollection services)
@@ -162,10 +186,11 @@ namespace FinanceAPI
 			
 			var loggerConfiguration = new LoggerConfiguration()
 				.MinimumLevel.Override("Microsoft", LogEventLevel.Verbose)
+				.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Verbose)
 				.Enrich.FromLogContext()
 				.WriteTo.Logger(lc => lc
 					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Error)
-					.WriteTo.File("errors.txt"))
+					.WriteTo.File(new CompactJsonFormatter(), "errors.txt"))
 				.WriteTo.Logger(lc => lc
 					.Filter.ByIncludingOnly(f => f.Level >= LogEventLevel.Information)
 					.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss:fff} [{Level}] {Message}{NewLine}{Exception}")

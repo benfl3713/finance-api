@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
-namespace FinanceAPI
+namespace FinanceAPICore
 {
     public static class Error
     {

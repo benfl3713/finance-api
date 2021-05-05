@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FinanceAPI.Controllers
+namespace FinanceAPICore.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]

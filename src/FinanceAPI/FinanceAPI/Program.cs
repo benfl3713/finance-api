@@ -8,7 +8,7 @@ using Serilog;
 using Serilog.Events;
 
 
-namespace FinanceAPI
+namespace FinanceAPICore
 {
 	public class Program
 	{
@@ -16,7 +16,7 @@ namespace FinanceAPI
 		{
 			try
 			{
-				Console.WriteLine("Starting Up");
+				Log.Information("Starting Up");
 				CreateHostBuilder(args).Build().Run();
 				return 0;
 			}
@@ -48,11 +48,11 @@ namespace FinanceAPI
 
 					if (Directory.Exists("config"))
 					{
-						Console.WriteLine("Found config folder. Loading all config files matching pattern: *appsettings.json");
+						Log.Information("Found config folder. Loading all config files matching pattern: *appsettings.json");
 						foreach (var file in Directory.GetFiles("config", "*appsettings.json"))
 						{
 							configurationBuilder.AddJsonFile(file);
-							Console.WriteLine($"Loaded config from {file}");
+							Log.Information($"Loaded config from {file}");
 						}
 					}
 					

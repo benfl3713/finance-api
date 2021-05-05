@@ -13,14 +13,12 @@ namespace FinanceAPIData
 		IAccountDataService _accountDataService;
 		ITransactionsDataService _transactionDataService;
 		IDatafeedDataService _datafeedDataService;
-		string _connectionString;
 
-		public AccountProcessor(string connectionString)
+		public AccountProcessor(IAccountDataService accountDataService, ITransactionsDataService transactionsDataService, IDatafeedDataService datafeedDataService)
 		{
-			_connectionString = connectionString;
-			_accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(_connectionString);
-			_transactionDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(_connectionString);
-			_datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_connectionString);
+			_accountDataService = accountDataService;
+			_transactionDataService = transactionsDataService;
+			_datafeedDataService = datafeedDataService;
 		}
 		public string InsertAccount(Account account)
 		{
