@@ -1,51 +1,50 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using MongoDB.Driver;
-using System;
+﻿using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
+using Microsoft.Extensions.Options;
 
 namespace FinanceAPIMongoDataService.DataService
 {
-	public class ClientDataService : IClientDataService
+	public class ClientDataService : BaseDataService, IClientDataService
 	{
 		string databaseName = "finance";
 		string tableName = "clients";
-		string connectionString;
+		private readonly string _connectionString;
 
-		public ClientDataService(string connectionString)
+		public ClientDataService(IOptions<AppSettings> appOptions): base(appOptions)
 		{
-			this.connectionString = connectionString;
+			_connectionString = appOptions.Value.MongoDB_ConnectionString;
 		}
 
 		public bool InsertClient(Client client)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			return database.InsertRecord(tableName, client);
 		}
 
 		public Client GetClientById(string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			return database.LoadRecordById<Client>(tableName, clientId);
 		}
 
 		public bool UpdateClient(Client client)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			return database.UpdateRecord(tableName, client, client.ID);
 		}
 
 		public bool DeleteClient(string clientId)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			return database.DeleteRecord<Client>(tableName, clientId);
 		}
 
 		public Client GetClientByUsername(string username)
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			var filter = Builders<Client>.Filter.Eq("Username", username);
 			List<Client> records = database.LoadRecordsByFilter(tableName, filter);
 			if (records.Any())
@@ -56,7 +55,7 @@ namespace FinanceAPIMongoDataService.DataService
 
 		public List<Client> GetAllClients()
 		{
-			MongoDatabase database = new MongoDatabase(databaseName, connectionString);
+			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			return database.LoadRecordsByFilter<Client>(tableName, null);
 		}
 	}

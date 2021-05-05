@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FinanceAPI;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
@@ -12,15 +13,14 @@ namespace FinanceAPIData.Tasks
     {
         private IAccountDataService _accountDataService;
         private IDatafeedDataService _datafeedDataService;
-        public AccountRefreshPoller(IOptions<TaskSettings> settings) : base(settings)
+        public AccountRefreshPoller(IOptions<TaskSettings> settings, IAccountDataService accountDataService, IDatafeedDataService datafeedDataService) : base(settings)
         {
+            _accountDataService = accountDataService;
+            _datafeedDataService = datafeedDataService;
         }
 
         public override void Execute(Task task)
         {
-            _accountDataService = new FinanceAPIMongoDataService.DataService.AccountDataService(Settings.MongoDB_ConnectionString);
-            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(Settings.MongoDB_ConnectionString);
-
             List<Account> accounts = _accountDataService.GetAllAccounts();
             foreach (Account account in accounts)
             {

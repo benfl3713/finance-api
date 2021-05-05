@@ -1,7 +1,6 @@
 ﻿using FinanceAPIData.Datafeeds.APIs;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FinanceAPIData.Datafeeds
 {

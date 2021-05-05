@@ -1,18 +1,16 @@
-﻿using FinanceAPICore;
+﻿using System;
+using FinanceAPICore;
 using FinanceAPICore.DataService;
-using System;
 
 namespace FinanceAPIData
 {
 	public class ClientProcessor
 	{
 		IClientDataService _clientDataService;
-		string _connectionString;
 
-		public ClientProcessor(string connectionString)
+		public ClientProcessor(IClientDataService clientDataService)
 		{
-			_connectionString = connectionString;
-			_clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_connectionString);
+			_clientDataService = clientDataService;
 		}
 		public string InsertClient(Client client)
 		{

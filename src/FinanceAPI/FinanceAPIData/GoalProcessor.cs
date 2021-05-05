@@ -9,9 +9,9 @@ namespace FinanceAPIData
     {
         private IGoalDataService _goalDataService;
 
-        public GoalProcessor(string connectionString)
+        public GoalProcessor(IGoalDataService goalDataService)
         {
-            _goalDataService = new FinanceAPIMongoDataService.DataService.GoalDataService(connectionString);
+            _goalDataService = goalDataService;
         }
         
         public bool InsertGoal(Goal goal)

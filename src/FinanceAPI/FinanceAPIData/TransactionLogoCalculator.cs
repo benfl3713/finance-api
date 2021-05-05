@@ -1,12 +1,11 @@
-﻿using FinanceAPICore.DataService;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using FinanceAPICore;
 using System.Threading.Tasks;
 using System.Net;
 using System.Linq;
 using System.Text.RegularExpressions;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
 
 namespace FinanceAPIData
 {
@@ -14,14 +13,12 @@ namespace FinanceAPIData
 	{
 		protected ITransactionsDataService _transactionsDataService;
 		protected IClientDataService _clientDataService;
-		string _connectionString;
 		protected Dictionary<string, Logo> _logoOverrides;
 
-		public TransactionLogoCalculator(string connectionString, Dictionary<string, Logo> logoOverrides)
+		public TransactionLogoCalculator(ITransactionsDataService transactionsDataService, IClientDataService clientDataService, Dictionary<string, Logo> logoOverrides)
 		{
-			_connectionString = connectionString;
-			_transactionsDataService = new FinanceAPIMongoDataService.DataService.TransactionsDataService(_connectionString);
-			_clientDataService = new FinanceAPIMongoDataService.DataService.ClientDataService(_connectionString);
+			_transactionsDataService = transactionsDataService;
+			_clientDataService = clientDataService;
 			_logoOverrides = logoOverrides;
 		}
 

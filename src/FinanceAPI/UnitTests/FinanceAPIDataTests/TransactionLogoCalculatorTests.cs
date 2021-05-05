@@ -13,7 +13,7 @@ namespace FinanceAPIDataTests
         [TestCaseSource(typeof(TestCases), nameof(TestCases.RunTestData))]
         public void RunTest(Transaction originalTransaction, string expectedLogo)
         {
-            TransactionLogoCalculatorMock mock = new TransactionLogoCalculatorMock(string.Empty);
+            TransactionLogoCalculatorMock mock = new TransactionLogoCalculatorMock();
             Dictionary<string, string> transactionLogos = new Dictionary<string, string>();
             // Setup mocks
             Mock<ITransactionsDataService> mockITransactionsDataService = new Mock<ITransactionsDataService>();
@@ -47,7 +47,7 @@ namespace FinanceAPIDataTests
         
         private class TransactionLogoCalculatorMock : TransactionLogoCalculator
         {
-            public TransactionLogoCalculatorMock(string connectionString, Dictionary<string, Logo> logoOverrides = null) : base(connectionString, logoOverrides)
+            public TransactionLogoCalculatorMock(Dictionary<string, Logo> logoOverrides = null) : base(null, null, logoOverrides)
             {
                 _logoOverrides = logoOverrides ?? new Dictionary<string, Logo>
                 {

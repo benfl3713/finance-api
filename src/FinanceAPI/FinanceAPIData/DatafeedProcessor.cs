@@ -1,21 +1,19 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
 
 namespace FinanceAPIData
 {
 	public class DatafeedProcessor
 	{
 		IDatafeedDataService _datafeedDataService;
-		string _connectionString;
+		private AccountProcessor _accountProcessor;
 
-		public DatafeedProcessor(string connectionString)
+		public DatafeedProcessor(IDatafeedDataService datafeedDataService, AccountProcessor accountProcessor)
 		{
-			_connectionString = connectionString;
-			_datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_connectionString);
+			_datafeedDataService = datafeedDataService;
+			_accountProcessor = accountProcessor;
 		}
 		public List<Datafeed> GetDatafeeds(string clientId, string datafeedType = null)
 		{
@@ -30,7 +28,7 @@ namespace FinanceAPIData
 		{
 			if (string.IsNullOrEmpty(datafeed) || string.IsNullOrEmpty(vendorID) || string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountID))
 				return false;
-			var account = new AccountProcessor(_connectionString).GetAccountById(accountID, clientId);
+			var account = _accountProcessor.GetAccountById(accountID, clientId);
 			if (account == null)
 				return false;
 
@@ -42,7 +40,7 @@ namespace FinanceAPIData
 			if (string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountId))
 				return false;
 
-			var account = new AccountProcessor(_connectionString).GetAccountById(accountID, clientId);
+			var account = _accountProcessor.GetAccountById(accountID, clientId);
 			if (account == null)
 				return false;
 

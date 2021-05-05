@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
 using FinanceAPI.Attributes;
 using FinanceAPICore;
+using FinanceAPICore.DataService;
 using FinanceAPIData;
 using FinanceAPIData.Datafeeds;
 using FinanceAPIData.Datafeeds.APIs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -23,11 +21,14 @@ namespace FinanceAPI.Controllers
 		private DatafeedProcessor _datafeedProcessor;
 		private TaskProcessor _taskProcessor;
 		private AppSettings _appSettings;
-		public DatafeedController(DatafeedProcessor datafeedProcessor, IOptions<AppSettings> appSettings, TaskProcessor taskProcessor)
+		private IDatafeedDataService _datafeedDataService;
+		
+		public DatafeedController(DatafeedProcessor datafeedProcessor, IOptions<AppSettings> appSettings, TaskProcessor taskProcessor, IDatafeedDataService datafeedDataService)
 		{
 			_datafeedProcessor = datafeedProcessor;
 			_appSettings = appSettings.Value;
 			_taskProcessor = taskProcessor;
+			_datafeedDataService = datafeedDataService;
 		}
 
 		[HttpGet]
@@ -51,7 +52,7 @@ namespace FinanceAPI.Controllers
 					trueLayerAPI._ClientId = _appSettings.TrueLayer_ClientID;
 					trueLayerAPI._Secret = _appSettings.TrueLayer_ClientSecret;
 					trueLayerAPI.SetMode(_appSettings.TrueLayer_Mode);
-					trueLayerAPI._datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(_appSettings.MongoDB_ConnectionString);
+					trueLayerAPI._datafeedDataService = _datafeedDataService;
 				}
 				accounts.AddRange(datafeedApi.GetExternalAccounts(clientId, datafeed.AccessKey, datafeed.VendorID, datafeed.VendorName, datafeed.Provider));
 			}

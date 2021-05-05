@@ -1,10 +1,8 @@
-﻿using FinanceAPIData.Tasks;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace FinanceAPICore.Tasks

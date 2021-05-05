@@ -1,18 +1,17 @@
-﻿using FinanceAPICore.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Hangfire.Console;
-using Hangfire.Server;
+﻿using System;
+using FinanceAPICore.Tasks;
 using Microsoft.Extensions.Options;
+using Serilog;
 using Serilog.Events;
 
 namespace FinanceAPIData.Tasks
 {
-	public class BaseTask : ITask
+	public abstract class BaseTask : ITask
 	{
+		private readonly ILogger _logger;
 		public BaseTask(IOptions<TaskSettings> settings)
 		{
+			_logger = Serilog.Log.ForContext(GetType());
 			Settings = settings.Value;
 		}
 		public virtual event EventHandler Completed;
@@ -26,7 +25,7 @@ namespace FinanceAPIData.Tasks
 
 		protected void Log(string message, LogEventLevel eventLevel = LogEventLevel.Information)
 		{
-			Serilog.Log.Logger?.Write(eventLevel, message);
+			_logger.Write(eventLevel, $"[{GetType().Name}] {message}");
 		}
 	}
 }

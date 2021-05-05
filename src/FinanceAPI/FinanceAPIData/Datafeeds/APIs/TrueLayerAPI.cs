@@ -1,12 +1,12 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using FinanceAPICore.Utilities;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Utilities;
 using Serilog.Events;
 
 namespace FinanceAPIData.Datafeeds.APIs
@@ -21,9 +21,9 @@ namespace FinanceAPIData.Datafeeds.APIs
 		private string datafeedName = "TRUELAYER";
 
 		public TrueLayerAPI(){}
-		public TrueLayerAPI(string connectionString, string clientId, string clientSecret, string mode)
-		{
-            _datafeedDataService = new FinanceAPIMongoDataService.DataService.DatafeedDataService(connectionString);
+		public TrueLayerAPI(IDatafeedDataService datafeedDataService, string clientId, string clientSecret, string mode)
+        {
+            _datafeedDataService = datafeedDataService;
             _ClientId = clientId;
             _Secret = clientSecret;
 

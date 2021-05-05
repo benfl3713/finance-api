@@ -1,11 +1,7 @@
-﻿using FinanceAPICore.DataService;
+﻿using System;
+using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
-using FinanceAPIData.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Hangfire;
-using Microsoft.Extensions.Options;
 
 namespace FinanceAPIData.TaskManagment
 {
@@ -14,16 +10,14 @@ namespace FinanceAPIData.TaskManagment
 		private ITaskDataService _taskDataService;
 		private TransactionLogoCalculator _transactionLogoCalculator;
 
-		public TaskFactory(IBackgroundJobClient backgroundJobs, TransactionLogoCalculator transactionLogoCalculator)
+		public TaskFactory(IBackgroundJobClient backgroundJobs, TransactionLogoCalculator transactionLogoCalculator, ITaskDataService taskDataService)
 		{
 			_transactionLogoCalculator = transactionLogoCalculator;
-			
+			_taskDataService = taskDataService;
 		}
 
 		public void StartTask(Task task, TaskSettings taskSettings)
 		{
-			_taskDataService = new FinanceAPIMongoDataService.DataService.TaskDataService(taskSettings.MongoDB_ConnectionString);
-
 			if (!_taskDataService.AllocateTask(task.ID))
 				return;
 
@@ -62,7 +56,7 @@ namespace FinanceAPIData.TaskManagment
 			switch (taskType)
 			{
 				case TaskType.AccountRefresh:
-					return new AccountRefresh(new OptionsWrapper<TaskSettings>(taskSettings));
+					//return new AccountRefresh(new OptionsWrapper<TaskSettings>(taskSettings), );
 				default:
 					return null;
 			}

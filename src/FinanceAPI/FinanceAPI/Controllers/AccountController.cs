@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using FinanceAPI.Attributes;
 using FinanceAPICore;
 using FinanceAPIData;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
@@ -15,6 +11,7 @@ namespace FinanceAPI.Controllers
 	[Route("api/account")]
 	[ApiController]
 	[Authorize]
+	[Produces("application/json")]
 	public class AccountController : Controller
 	{
 		private AccountProcessor _accountProcessor;
@@ -23,11 +20,15 @@ namespace FinanceAPI.Controllers
 			_accountProcessor = accountProcessor;
 		}
 
+		/// <summary>
+		/// Gets a List of all the clients accounts
+		/// </summary>
+		/// <returns></returns>
 		[HttpGet]
-		public IActionResult GetAccounts()
+		public List<Account> GetAccounts()
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
-			return Json(_accountProcessor.GetAccounts(clientId));
+			return _accountProcessor.GetAccounts(clientId);
 		}
 		
 		[HttpPost("{accountId}")]
