@@ -1,11 +1,7 @@
-﻿using FinanceAPICore.DataService;
+﻿using System;
+using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
-using FinanceAPIData.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Hangfire;
-using Microsoft.Extensions.Options;
 
 namespace FinanceAPIData.TaskManagment
 {

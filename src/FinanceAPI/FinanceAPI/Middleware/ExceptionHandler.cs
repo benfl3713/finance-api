@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
-namespace FinanceAPICore.Middleware
+namespace FinanceAPI.Middleware
 {
     public class ExceptionHandler
     {

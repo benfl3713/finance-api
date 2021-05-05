@@ -2,8 +2,9 @@ using System;
 using System.IO;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+using FinanceAPI.Middleware;
+using FinanceAPICore;
 using FinanceAPICore.DataService;
-using FinanceAPICore.Middleware;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
@@ -19,7 +20,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -27,7 +27,7 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using MenuItem = ElectronNET.API.Entities.MenuItem;
 
-namespace FinanceAPICore
+namespace FinanceAPI
 {
 	public class Startup
 	{
@@ -107,7 +107,7 @@ namespace FinanceAPICore
 			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.IsDemo)
 			{
 				Serilog.Log.Logger?.Write(LogEventLevel.Information, "FinanceAPI running in Demo Mode");
-				RecurringJob.AddOrUpdate<DemoClearDownTask>("Demo-DemoClearDownTask", r => r.Execute(new FinanceAPICore.Tasks.Task("DemoClearDownTask", null, TaskType.DemoClearDownTask, DateTime.Now)), "59 23 * * Sun");
+				RecurringJob.AddOrUpdate<DemoClearDownTask>("Demo-DemoClearDownTask", r => r.Execute(new Task("DemoClearDownTask", null, TaskType.DemoClearDownTask, DateTime.Now)), "59 23 * * Sun");
 			}
 			else
 			{

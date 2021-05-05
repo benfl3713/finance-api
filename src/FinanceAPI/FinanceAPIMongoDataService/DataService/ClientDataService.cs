@@ -1,10 +1,8 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using MongoDB.Driver;
-using System;
+﻿using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
 using Microsoft.Extensions.Options;
 
 namespace FinanceAPIMongoDataService.DataService

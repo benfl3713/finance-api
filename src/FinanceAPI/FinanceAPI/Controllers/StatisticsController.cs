@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using FinanceAPICore.Attributes;
+using FinanceAPI.Attributes;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FinanceAPICore.Controllers
+namespace FinanceAPI.Controllers
 {
     [Route("api/statistics")]
     [ApiController]

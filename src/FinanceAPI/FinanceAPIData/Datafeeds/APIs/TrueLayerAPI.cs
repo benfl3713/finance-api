@@ -1,12 +1,12 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using FinanceAPICore.Utilities;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Utilities;
 using Serilog.Events;
 
 namespace FinanceAPIData.Datafeeds.APIs

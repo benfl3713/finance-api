@@ -1,12 +1,7 @@
-﻿using FinanceAPICore.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Hangfire.Console;
-using Hangfire.Server;
+﻿using System;
+using FinanceAPICore.Tasks;
 using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 
 namespace FinanceAPIData.Tasks

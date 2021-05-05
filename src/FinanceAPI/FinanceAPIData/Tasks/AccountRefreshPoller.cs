@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FinanceAPI;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;

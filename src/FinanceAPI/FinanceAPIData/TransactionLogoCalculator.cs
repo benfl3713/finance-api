@@ -1,12 +1,11 @@
-﻿using FinanceAPICore.DataService;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using FinanceAPICore;
 using System.Threading.Tasks;
 using System.Net;
 using System.Linq;
 using System.Text.RegularExpressions;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
 
 namespace FinanceAPIData
 {

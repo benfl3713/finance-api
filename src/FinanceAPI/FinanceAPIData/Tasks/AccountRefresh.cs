@@ -1,14 +1,13 @@
-﻿using FinanceAPICore;
-using FinanceAPICore.DataService;
-using FinanceAPICore.Tasks;
+﻿using FinanceAPI;
 using FinanceAPIData.Datafeeds.APIs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using FinanceAPICore;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Tasks;
 using Hangfire;
-using Hangfire.Server;
 using Microsoft.Extensions.Options;
 using Task = FinanceAPICore.Tasks.Task;
 

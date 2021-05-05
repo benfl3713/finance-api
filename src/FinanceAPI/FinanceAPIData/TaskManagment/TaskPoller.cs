@@ -1,8 +1,8 @@
-﻿using FinanceAPICore.DataService;
-using FinanceAPICore.Tasks;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading;
+using FinanceAPICore.DataService;
+using FinanceAPICore.Tasks;
 using FinanceAPIData.Tasks;
 using Hangfire;
 

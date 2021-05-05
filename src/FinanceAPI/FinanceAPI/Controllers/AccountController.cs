@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
+using FinanceAPI.Attributes;
 using FinanceAPICore;
-using FinanceAPICore.Attributes;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
-namespace FinanceAPICore.Controllers
+namespace FinanceAPI.Controllers
 {
 	[Route("api/account")]
 	[ApiController]

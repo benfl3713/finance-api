@@ -1,9 +1,6 @@
 ﻿using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FinanceAPIData
 {

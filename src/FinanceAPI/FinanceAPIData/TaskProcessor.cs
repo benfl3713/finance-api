@@ -1,7 +1,7 @@
-﻿using FinanceAPICore;
+﻿using System.Collections.Generic;
+using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
-using System.Collections.Generic;
 using FinanceAPIData.Tasks;
 using Hangfire;
 

@@ -1,7 +1,5 @@
-﻿using FinanceAPICore.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using FinanceAPICore.Tasks;
 
 namespace FinanceAPICore.DataService
 {

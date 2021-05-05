@@ -1,8 +1,8 @@
-﻿using FinanceAPICore.Attributes;
+﻿using FinanceAPI.Attributes;
 using FinanceAPIData;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FinanceAPICore.Controllers
+namespace FinanceAPI.Controllers
 {
     [Route("api/notification")]
     [ApiController]

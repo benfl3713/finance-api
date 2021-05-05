@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FinanceAPICore.Attributes;
+using FinanceAPI.Attributes;
+using FinanceAPI.Middleware;
+using FinanceAPICore;
 using FinanceAPICore.DataService;
-using FinanceAPICore.Middleware;
 using FinanceAPIData.Datafeeds.APIs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Serilog.Events;
 
-namespace FinanceAPICore.Controllers
+namespace FinanceAPI.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]

@@ -6,8 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FinanceAPICore;
 
-namespace FinanceAPICore.Middleware
+namespace FinanceAPI.Middleware
 {
 	public class JwtMiddleware
 	{
