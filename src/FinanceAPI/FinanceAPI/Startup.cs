@@ -26,6 +26,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using MenuItem = ElectronNET.API.Entities.MenuItem;
+using Notification = FinanceAPICore.Notification;
 
 namespace FinanceAPI
 {
@@ -103,6 +104,8 @@ namespace FinanceAPI
 
 			app.UseSerilogRequestLogging();
 
+			Notification.NotificationDataService = app.ApplicationServices.GetService<INotificationDataService>();
+
 			// new TransactionMigrater().Run(app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.MongoDB_ConnectionString);
 			if (app.ApplicationServices.GetService<IOptions<AppSettings>>().Value.IsDemo)
 			{
@@ -171,6 +174,7 @@ namespace FinanceAPI
 			CreateDataServiceTransient<IDatafeedDataService, FinanceAPIMongoDataService.DataService.DatafeedDataService>(services);
 			CreateDataServiceTransient<ITaskDataService, FinanceAPIMongoDataService.DataService.TaskDataService>(services);
 			CreateDataServiceTransient<IGoalDataService, FinanceAPIMongoDataService.DataService.GoalDataService>(services);
+			CreateDataServiceTransient<INotificationDataService, FinanceAPIMongoDataService.DataService.NotificationDataService>(services);
 		}
 
 		private void CreateDataServiceTransient<TInterface, TDataService>(IServiceCollection services) where TDataService : BaseDataService, TInterface where TInterface : class

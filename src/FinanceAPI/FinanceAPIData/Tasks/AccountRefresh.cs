@@ -59,21 +59,23 @@ namespace FinanceAPIData.Tasks
 
             decimal? totalAccountBalance = null;
             decimal totalAvailableAccountBalance = 0;
+            int transactionsImportedCount = 0;
 
             foreach (var externalAccount in externalAccounts)
 			{
-                var balance =  ProcessExternalAccount(externalAccount, datafeedApi, account, out decimal availableBalance);
+                var balance =  ProcessExternalAccount(externalAccount, datafeedApi, account, out decimal availableBalance, out int tCount);
                 if (balance.HasValue && totalAccountBalance == null)
                     totalAccountBalance = 0;
                 totalAccountBalance += balance;
                 totalAvailableAccountBalance += availableBalance;
+                transactionsImportedCount += tCount;
             }
 
             // Reload account to get new balance
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
             if(accountSettings != null && accountSettings.GenerateAdjustments && totalAccountBalance.HasValue)
-                BalanceAccount(account, totalAccountBalance.Value);
+                BalanceAccount(account, ref totalAccountBalance);
             
             // Enqueue task to calculate logos on new transactions
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
@@ -81,15 +83,24 @@ namespace FinanceAPIData.Tasks
 
             // Set Account Last Refreshed Date
             _accountDataService.UpdateLastRefreshedDate(accountID, DateTime.Now);
+            
+            Notification.InsertNew(new Notification(Task.ClientID, $"Account Refresh for {account.AccountName} completed. \nImported {transactionsImportedCount} transactions")
+            {
+                Details = new Dictionary<string, string>
+                {
+                    {"AsAtAccountBalance", totalAccountBalance?.ToString()}
+                }
+            });
 
             BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
             base.Execute(Task);
         }
 
-        private decimal? ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance)
+        private decimal? ProcessExternalAccount(ExternalAccount externalAccount, IDatafeedAPI datafeedApi, Account account, out decimal availableBalance, out int transactionsImportedCount)
 		{
             string encryptedAccessKey = _datafeedDataService.GetAccessKeyForExternalAccount(externalAccount.Provider, externalAccount.VendorID, Task.ClientID);
             availableBalance = 0;
+            transactionsImportedCount = 0;
 
             if (string.IsNullOrEmpty(externalAccount?.AccountID) || string.IsNullOrEmpty(encryptedAccessKey) || datafeedApi == null)
             {
@@ -125,24 +136,25 @@ namespace FinanceAPIData.Tasks
             foreach (Transaction transaction in sortedTransactions)
             {
                 bool? imported = _transactionDataService.ImportDatafeedTransaction(transaction);
+                if (imported == true)
+                    transactionsImportedCount++;
             }
 
             return accountBalance;
         }
 
-        private void BalanceAccount(Account account, decimal accountBalance)
+        private void BalanceAccount(Account account, ref decimal? accountBalance)
         {
-			if (accountBalance != 0 && account.CurrentBalance.HasValue && account.CurrentBalance != accountBalance)
+			if (accountBalance.HasValue && accountBalance != 0 && account.CurrentBalance.HasValue && account.CurrentBalance != accountBalance)
 			{
-				decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance);
-				List<Transaction> recentTransactions = _transactionDataService.GetTransactions(Task.ClientID).Where(t => t.Date > DateTime.Now.AddMonths(-1)).ToList();
-				List<Transaction> adjusts = recentTransactions.Where(t => t.Merchant == "Adjustment Transaction" && t.Type == "Adjust" && t.Amount == (account.CurrentBalance <= accountBalance ? -difference : difference)).ToList();
-				Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
+				decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance.Value);
+                Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
                 transaction.ClientID = Task.ClientID;
                 transaction.Owner = nameof(AccountRefresh);
 				Log($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
                 _transactionDataService.InsertTransaction(transaction);
-			}
+                accountBalance += difference;
+            }
 		}
 
         private List<Transaction> MerchantAlgorithm(List<Transaction> transactions)
