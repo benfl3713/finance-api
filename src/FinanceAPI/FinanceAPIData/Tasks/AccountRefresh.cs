@@ -83,14 +83,17 @@ namespace FinanceAPIData.Tasks
 
             // Set Account Last Refreshed Date
             _accountDataService.UpdateLastRefreshedDate(accountID, DateTime.Now);
-            
-            Notification.InsertNew(new Notification(Task.ClientID, $"Account Refresh for {account.AccountName} completed. \nImported {transactionsImportedCount} transactions")
+
+            if (accountSettings?.NotifyAccountRefreshes ?? false)
             {
-                Details = new Dictionary<string, string>
+                Notification.InsertNew(new Notification(Task.ClientID, $"Account Refresh for {account.AccountName} completed. \nImported {transactionsImportedCount} transactions")
                 {
-                    {"AsAtAccountBalance", totalAccountBalance?.ToString()}
-                }
-            });
+                    Details = new Dictionary<string, string>
+                    {
+                        {"AsAtAccountBalance", totalAccountBalance?.ToString()}
+                    }
+                });
+            }
 
             BackgroundJob.Enqueue<LogoCalculatorTask>(t => t.Execute(logoTask));
             base.Execute(Task);

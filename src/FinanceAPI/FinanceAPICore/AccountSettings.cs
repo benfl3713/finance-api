@@ -14,6 +14,7 @@ namespace FinanceAPI
         [JsonConverter(typeof(StringEnumConverter))]
         public RefreshIntervals RefreshInterval = RefreshIntervals.Never;
         public bool GenerateAdjustments = true;
+        public bool NotifyAccountRefreshes = true;
         
         public enum RefreshIntervals
         {

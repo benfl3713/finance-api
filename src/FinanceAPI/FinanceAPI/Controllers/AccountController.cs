@@ -91,7 +91,7 @@ namespace FinanceAPI.Controllers
 
 		[HttpPost("{accountId}/[action]")]
 
-		public IActionResult SetAccountSettings([FromBody] AccountSettings accountSettings)
+		public IActionResult SetAccountSettings([FromBody][Required] AccountSettings accountSettings)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
 			return Json(_accountProcessor.SetAccountSettings(accountSettings, clientId));
