@@ -26,6 +26,7 @@ namespace FinanceAPIData.TaskManagment
 			
 			RecurringJob.AddOrUpdate(() => transactionLogoCalculator.Run(null, null), Cron.Hourly);
 			RecurringJob.AddOrUpdate<AccountRefreshPoller>(r => r.Execute(null), "0 */5 * ? * *");
+			RecurringJob.AddOrUpdate<WealthRefreshTask>(r => r.Execute(null), Cron.Hourly);
 		}
 
 		public void Start()

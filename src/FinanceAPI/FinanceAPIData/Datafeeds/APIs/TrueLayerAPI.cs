@@ -52,7 +52,7 @@ namespace FinanceAPIData.Datafeeds.APIs
             request.AddParameter("undefined", $"grant_type=authorization_code&client_id={_ClientId}&client_secret={_Secret}&redirect_uri={requestUrl}&code={publicToken}", ParameterType.RequestBody);
 
             IRestResponse response = client.Execute(request);
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                 string accessKey = objContent?.access_token;
@@ -83,14 +83,14 @@ namespace FinanceAPIData.Datafeeds.APIs
                 var request = new RestRequest(Method.GET);
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                     providerName = objContent.results[0].provider.display_name;
                     providerId = objContent.results[0].provider.provider_id;
                     return true;
                 }
-                else if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     return GetProviderInfo(SecurityService.DecryptTripleDES(RefreshTokenExchange(SecurityService.EncryptTripleDES(accesskey))), out providerName, out providerId, false);
                 }
@@ -119,11 +119,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
-                if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
+                if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     return GetExternalAccounts(clientId, RefreshTokenExchange(encryptedAccessKey), vendorID, vendorName, provider, false);
                 }
-                else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                else if (response.StatusCode != HttpStatusCode.OK)
                     return accounts;
                 else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -162,7 +162,7 @@ namespace FinanceAPIData.Datafeeds.APIs
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
-                if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
+                if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     return GetAccountTransactions(externalAccountID, RefreshTokenExchange(encryptedAccessKey), out accountBalance, out availableBalance, dateFrom = null, dateTo = null, false);
                 }
@@ -171,7 +171,7 @@ namespace FinanceAPIData.Datafeeds.APIs
                     MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
                     return transactions;
                 }
-                else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                else if (response.StatusCode != HttpStatusCode.OK)
                     return transactions;
 
 
@@ -204,11 +204,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
-                if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
+                if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     return GetAccountPendingTransactions(externalAccountID, RefreshTokenExchange(encryptedAccessKey), dateFrom = null, dateTo = null, false);
                 }
-                else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                else if (response.StatusCode != HttpStatusCode.OK)
                     return transactions;
                 else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -284,14 +284,14 @@ namespace FinanceAPIData.Datafeeds.APIs
                 var request = new RestRequest(Method.GET);
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                     decimal.TryParse((string)objContent.results[0].current, out decimal amount);
                     decimal.TryParse((string)objContent.results[0].available, out availableBalance);
                     return amount;
                 }
-                else if (response.Content.Length > 0 && response.StatusCode == System.Net.HttpStatusCode.Unauthorized && refreshToken)
+                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     encryptedAccessKey = RefreshTokenExchange(encryptedAccessKey);
                     return GetAccountBalance(externalAccountID, ref encryptedAccessKey, out availableBalance, false);
@@ -332,7 +332,7 @@ namespace FinanceAPIData.Datafeeds.APIs
                 request.AddParameter("undefined", $"grant_type=refresh_token&client_id={_ClientId}&client_secret={_Secret}&refresh_token={refreshToken}", ParameterType.RequestBody);
 
                 IRestResponse response = client.Execute(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                     string accessKey = objContent?.access_token;

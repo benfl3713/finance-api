@@ -1,9 +1,12 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using FinanceAPI.Attributes;
 using FinanceAPI.Middleware;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPIData.Datafeeds.APIs;
+using FinanceAPIData.Datafeeds.WealthAPIs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -31,6 +34,13 @@ namespace FinanceAPI.Controllers
 		{
             return Json(_appSettings.TrueLayer_ClientID);
 		}
+
+        [Authorize]
+        [HttpGet("[action]")]
+        public IActionResult GetCoinbaseClientId()
+        {
+            return Json(_appSettings.CoinBase_ClientId);
+        }
 
         [HttpPost("[action]")]
         public string TrueLayerAuthentication()
@@ -73,6 +83,34 @@ namespace FinanceAPI.Controllers
 
                 TrueLayerAPI trueLayerAPI = new TrueLayerAPI(_datafeedDataService, _appSettings.TrueLayer_ClientID, _appSettings.TrueLayer_ClientSecret, _appSettings.TrueLayer_Mode);
                 return trueLayerAPI.RegisterNewClient(code, clientId, location.AbsoluteUri, existingId) ? "Datafeed has been Added. \nPlease Refresh finance manager" : "Something went wrong";
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return "Something went wrong. The error has been logged in the console";
+            }
+        }
+        
+        [HttpGet("[action]")]
+        public async Task<string> CoinbaseAuthentication([Required] string code, [Required] string state)
+        {
+            try
+            {
+                string scheme = Request.Scheme;
+                if (!string.IsNullOrEmpty(Request.Headers["X-Forwarded-Proto"]))
+                    scheme = Request.Headers["X-Forwarded-Proto"];
+
+                var location = new Uri($"{scheme}://{Request.Host}{Request.Path}");
+
+                var clientId = _jwtMiddleware.GetClientIdFromToken(state);
+                if (clientId == null)
+                    return "Invalid User";
+
+
+                CoinbaseApi coinbaseApi = new CoinbaseApi(new OptionsWrapper<AppSettings>(_appSettings), _datafeedDataService, null);
+                await coinbaseApi.Authenticate(clientId, code, location.ToString());
+                return "Datafeed has been Added. \nPlease Refresh finance manager";
 
             }
             catch (Exception e)

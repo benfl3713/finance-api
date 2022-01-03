@@ -47,6 +47,10 @@ namespace FinanceAPI.Controllers
 			foreach (var datafeed in datafeeds)
 			{
 				IDatafeedAPI datafeedApi = DatafeedManager.ResolveApiType(datafeed.Provider);
+				
+				if (datafeedApi == null)
+					continue;
+
 				if(datafeedApi is TrueLayerAPI trueLayerAPI)
 				{
 					trueLayerAPI._ClientId = _appSettings.TrueLayer_ClientID;

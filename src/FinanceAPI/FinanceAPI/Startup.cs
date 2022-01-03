@@ -5,10 +5,12 @@ using ElectronNET.API.Entities;
 using FinanceAPI.Middleware;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
+using FinanceAPICore.DataService.Wealth;
 using FinanceAPICore.Tasks;
 using FinanceAPIData;
 using FinanceAPIData.TaskManagment;
 using FinanceAPIData.Tasks;
+using FinanceAPIData.Wealth;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Dashboard;
@@ -164,6 +166,7 @@ namespace FinanceAPI
 			services.AddTransient<TaskProcessor>();
 			services.AddTransient<GoalProcessor>();
 			services.AddTransient<NotificationProcessor>();
+			services.AddTransient<AssetRepository>();
 		}
 
 		private void AddDataServices(IServiceCollection services)
@@ -175,6 +178,7 @@ namespace FinanceAPI
 			CreateDataServiceTransient<ITaskDataService, FinanceAPIMongoDataService.DataService.TaskDataService>(services);
 			CreateDataServiceTransient<IGoalDataService, FinanceAPIMongoDataService.DataService.GoalDataService>(services);
 			CreateDataServiceTransient<INotificationDataService, FinanceAPIMongoDataService.DataService.NotificationDataService>(services);
+			CreateDataServiceTransient<IAssetDataService, FinanceAPIMongoDataService.DataService.Wealth.AssetDataService>(services);
 		}
 
 		private void CreateDataServiceTransient<TInterface, TDataService>(IServiceCollection services) where TDataService : BaseDataService, TInterface where TInterface : class

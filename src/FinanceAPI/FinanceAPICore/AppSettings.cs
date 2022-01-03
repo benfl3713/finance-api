@@ -19,5 +19,7 @@ namespace FinanceAPICore
 		public bool EnableHangfireDashboard { get; set; } = false;
 
 		public bool IsDemo { get; set; } = false;
+		public string CoinBase_ClientId { get; set; }
+		public string CoinBase_ClientSecret { get; set; }
 	}
 }

@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Coinbase" Version="6.0.1" />
     <PackageReference Include="Hangfire.Console" Version="1.4.2" />
     <PackageReference Include="Hangfire.Core" Version="1.7.13" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.8" />

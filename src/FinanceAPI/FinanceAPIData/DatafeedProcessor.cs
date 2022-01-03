@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Coinbase;
+using Coinbase.Models;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
+using FinanceAPICore.Utilities;
+using Microsoft.Extensions.Options;
 
 namespace FinanceAPIData
 {
@@ -9,11 +13,13 @@ namespace FinanceAPIData
 	{
 		IDatafeedDataService _datafeedDataService;
 		private AccountProcessor _accountProcessor;
+		private AppSettings _appSettings;
 
-		public DatafeedProcessor(IDatafeedDataService datafeedDataService, AccountProcessor accountProcessor)
+		public DatafeedProcessor(IDatafeedDataService datafeedDataService, AccountProcessor accountProcessor, IOptions<AppSettings> appSettings)
 		{
 			_datafeedDataService = datafeedDataService;
 			_accountProcessor = accountProcessor;
+			_appSettings = appSettings.Value;
 		}
 		public List<Datafeed> GetDatafeeds(string clientId, string datafeedType = null)
 		{

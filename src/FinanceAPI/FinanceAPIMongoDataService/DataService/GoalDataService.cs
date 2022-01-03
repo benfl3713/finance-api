@@ -29,7 +29,8 @@ namespace FinanceAPIMongoDataService.DataService
         public bool UpdateGoal(Goal goal)
         {
             MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
-            return database.UpdateRecord(tableName, goal, goal.Id, idField: nameof(goal.Id));
+            var filter = Builders<Goal>.Filter.Eq(nameof(Goal.ClientId), goal.ClientId);
+            return database.UpdateRecord(tableName, goal, goal.Id, filter, nameof(Goal.Id));
         }
 
         public bool DeleteGoal(string id, string clientId)

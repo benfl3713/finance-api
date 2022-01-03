@@ -8,6 +8,9 @@ namespace FinanceAPIData.Datafeeds
     {
         public static IDatafeedAPI ResolveApiType(string datafeedId)
         {
+            if (!datafeedApis.ContainsKey(datafeedId))
+                return null;
+            
             Type datafeedType = datafeedApis[datafeedId];
             if (datafeedType == null)
                 return null;
