@@ -33,6 +33,9 @@ namespace FinanceAPIData.Tasks
         {
             foreach (Client client in _clientDataService.GetAllClients())
             {
+                if (!string.IsNullOrEmpty(task.ClientID) && task.ClientID != client.ID)
+                    continue;
+                
                 List<Datafeed> datafeeds = _datafeedProcessor.GetDatafeeds(client.ID);
                 foreach (Datafeed datafeed in datafeeds)
                 {

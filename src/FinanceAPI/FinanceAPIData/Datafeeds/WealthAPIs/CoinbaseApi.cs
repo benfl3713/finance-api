@@ -7,7 +7,9 @@ using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Utilities;
 using FinanceAPICore.Wealth;
+using FinanceAPIData.Tasks;
 using FinanceAPIData.Wealth;
+using Hangfire;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using CoinbaseAccount = Coinbase.Models.Account;
@@ -159,6 +161,8 @@ namespace FinanceAPIData.Datafeeds.WealthAPIs
             Datafeed datafeed = new Datafeed(clientId, DATAFEED_NAME, DATAFEED_NAME, "Coinbase", DateTime.Now, SecurityService.EncryptTripleDES(token.AccessToken), SecurityService.EncryptTripleDES(token.RefreshToken));
             if (!_datafeedDataService.AddUpdateClientDatafeed(datafeed))
                 throw new Exception("Could not save new datafeed connection");
+
+            BackgroundJob.Enqueue<WealthRefreshTask>(r => r.Execute(new FinanceAPICore.Tasks.Task{ClientID = clientId}));
         }
 
         private CoinbaseClient GetClient(string clientId)
