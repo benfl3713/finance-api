@@ -9,7 +9,9 @@ using FinanceAPICore.Utilities;
 using FinanceAPICore.Wealth;
 using FinanceAPIData.Wealth;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using CoinbaseAccount = Coinbase.Models.Account;
+using Transaction = Coinbase.Models.Transaction;
 
 namespace FinanceAPIData.Datafeeds.WealthAPIs
 {
@@ -18,17 +20,20 @@ namespace FinanceAPIData.Datafeeds.WealthAPIs
         private readonly AppSettings _appSettings;
         private readonly IDatafeedDataService _datafeedDataService;
         private readonly AssetRepository _assetRepository;
+        private readonly TradeRepository _tradeRepository;
         private const string DATAFEED_NAME = "COINBASE";
-        public CoinbaseApi(IOptions<AppSettings> appSettings, IDatafeedDataService datafeedDataService, AssetRepository assetRepository)
+
+        public CoinbaseApi(IOptions<AppSettings> appSettings, IDatafeedDataService datafeedDataService, AssetRepository assetRepository, TradeRepository tradeRepository)
         {
             _appSettings = appSettings.Value;
             _datafeedDataService = datafeedDataService;
             _assetRepository = assetRepository;
+            _tradeRepository = tradeRepository;
 
             if (string.IsNullOrEmpty(_appSettings.CoinBase_ClientId) || string.IsNullOrEmpty(_appSettings.CoinBase_ClientSecret))
                 throw new ApplicationException($"Coinbase api does not have required config. You need to have: [{nameof(_appSettings.CoinBase_ClientId)}, {nameof(_appSettings.CoinBase_ClientSecret)}]");
         }
-        
+
         public async Task<List<Asset>> GetAssets(string clientId)
         {
             List<Asset> assets = new List<Asset>();
@@ -43,14 +48,12 @@ namespace FinanceAPIData.Datafeeds.WealthAPIs
                     Console.WriteLine(accountPage.Errors);
                     throw new Exception(string.Join<Error>('|', accountPage.Errors));
                 }
-                
+
                 assets.AddRange(ProcessAccountPage(accountPage, clientId));
                 moreData = accountPage.HasNextPage();
                 if (moreData)
                     accountPage = await client.GetNextPageAsync(accountPage);
             }
-            
-            assets.ForEach(a => _assetRepository.ImportAsset(a));
 
             return assets;
         }
@@ -84,9 +87,66 @@ namespace FinanceAPIData.Datafeeds.WealthAPIs
             return assets;
         }
 
-        public Task GetTradesByAsset(string clientId, string assetId)
+        public async Task<List<Trade>> GetTradesByAsset(string clientId, string assetId)
         {
-            throw new System.NotImplementedException();
+            List<Trade> trades = new List<Trade>();
+            CoinbaseClient client = GetClient(clientId);
+
+            bool moreData = true;
+            PagedResponse<Transaction> transactionPage = await client.Transactions.ListTransactionsAsync(assetId);
+
+            while (moreData)
+            {
+                if (transactionPage.HasError())
+                {
+                    Console.WriteLine(transactionPage.Errors);
+                    throw new Exception(string.Join<Error>('|', transactionPage.Errors));
+                }
+
+                trades.AddRange(ProcessTradePage(transactionPage, clientId, assetId));
+                moreData = transactionPage.HasNextPage();
+                if (moreData)
+                    transactionPage = await client.GetNextPageAsync(transactionPage);
+            }
+
+            return trades;
+        }
+
+        private List<Trade> ProcessTradePage(PagedResponse<Transaction> tradePage, string clientId, string assetId)
+        {
+            List<Trade> trades = new List<Trade>();
+            foreach (Transaction coinbaseTrade in tradePage.Data)
+            {
+                if (coinbaseTrade?.CreatedAt == null)
+                    continue;
+
+                string description = coinbaseTrade.Description;
+
+                if (string.IsNullOrEmpty(description) && coinbaseTrade.Details.ContainsKey("title"))
+                    description = coinbaseTrade.Details["title"]?.ToString();
+
+                Trade trade = new Trade
+                {
+                    Id = coinbaseTrade.Id,
+                    Description = description,
+                    Amount = coinbaseTrade.Amount.Amount,
+                    Currency = coinbaseTrade.Amount.Currency,
+                    Status = coinbaseTrade.Status,
+                    TradeDateTime = coinbaseTrade.CreatedAt.Value.UtcDateTime,
+                    AssetId = assetId,
+                    ClientID = clientId,
+                    Source = DATAFEED_NAME,
+                    Owner = DATAFEED_NAME,
+                    ExtraDetails = new Dictionary<string, string>
+                    {
+                        { "NativeAmount", JsonConvert.SerializeObject(coinbaseTrade.NativeAmount) }
+                    }
+                };
+
+                trades.Add(trade);
+            }
+
+            return trades;
         }
 
         public async Task Authenticate(string clientId, string code, string redirectId)
@@ -107,25 +167,22 @@ namespace FinanceAPIData.Datafeeds.WealthAPIs
 
             if (datafeed == null)
                 throw new ArgumentException("Could not find cointbase datafeed for client");
-            
+
             string accessToken = SecurityService.DecryptTripleDES(datafeed.AccessKey);
             string refreshToken = SecurityService.DecryptTripleDES(datafeed.RefreshKey);
-            
+
             return new CoinbaseClient(new OAuthConfig
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
-            }).WithAutomaticOAuthTokenRefresh(_appSettings.CoinBase_ClientId, _appSettings.CoinBase_ClientSecret, t => Task.Run(() =>
-            {
-                SaveNewRefreshToken(t, accessToken);
-            }));
+            }).WithAutomaticOAuthTokenRefresh(_appSettings.CoinBase_ClientId, _appSettings.CoinBase_ClientSecret, t => Task.Run(() => { SaveNewRefreshToken(t, accessToken); }));
         }
 
         private void SaveNewRefreshToken(OAuthResponse token, string encryptedOldAccessKey)
         {
             if (string.IsNullOrEmpty(token?.AccessToken) || string.IsNullOrEmpty(token?.RefreshToken))
                 throw new ApplicationException("Could not authenticate with coinbase");
-            
+
             _datafeedDataService.UpdateAccessKey(SecurityService.EncryptTripleDES(token.AccessToken), SecurityService.EncryptTripleDES(token.RefreshToken), encryptedOldAccessKey, DateTime.Now);
         }
     }

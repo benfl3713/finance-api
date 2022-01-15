@@ -108,7 +108,7 @@ namespace FinanceAPI.Controllers
                     return "Invalid User";
 
 
-                CoinbaseApi coinbaseApi = new CoinbaseApi(new OptionsWrapper<AppSettings>(_appSettings), _datafeedDataService, null);
+                CoinbaseApi coinbaseApi = new CoinbaseApi(new OptionsWrapper<AppSettings>(_appSettings), _datafeedDataService, null, null);
                 await coinbaseApi.Authenticate(clientId, code, location.ToString());
                 return "Datafeed has been Added. \nPlease Refresh finance manager";
 

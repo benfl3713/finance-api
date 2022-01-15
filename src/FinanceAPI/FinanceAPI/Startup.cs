@@ -167,6 +167,7 @@ namespace FinanceAPI
 			services.AddTransient<GoalProcessor>();
 			services.AddTransient<NotificationProcessor>();
 			services.AddTransient<AssetRepository>();
+			services.AddTransient<TradeRepository>();
 		}
 
 		private void AddDataServices(IServiceCollection services)
@@ -179,6 +180,7 @@ namespace FinanceAPI
 			CreateDataServiceTransient<IGoalDataService, FinanceAPIMongoDataService.DataService.GoalDataService>(services);
 			CreateDataServiceTransient<INotificationDataService, FinanceAPIMongoDataService.DataService.NotificationDataService>(services);
 			CreateDataServiceTransient<IAssetDataService, FinanceAPIMongoDataService.DataService.Wealth.AssetDataService>(services);
+			CreateDataServiceTransient<ITradeDataService, FinanceAPIMongoDataService.DataService.Wealth.TradeDataService>(services);
 		}
 
 		private void CreateDataServiceTransient<TInterface, TDataService>(IServiceCollection services) where TDataService : BaseDataService, TInterface where TInterface : class

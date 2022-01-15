@@ -68,7 +68,7 @@ namespace FinanceAPIMongoDataService
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
-					filter = filter & customFilter;
+					filter &= customFilter;
 				collection.ReplaceOne(filter, record);
 				return true;
 			}
@@ -101,7 +101,7 @@ namespace FinanceAPIMongoDataService
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
-					filter = filter & customFilter;
+					filter &= customFilter;
 				var options = new ReplaceOptions { IsUpsert = true };
 				collection.ReplaceOne(filter, record, options);
 				return true;
@@ -120,7 +120,7 @@ namespace FinanceAPIMongoDataService
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq("ID", id);
 				if (customFilter != null)
-					filter = filter & customFilter;
+					filter &= customFilter;
 				collection.UpdateOne(filter, updateDefinition);
 				return true;
 			}
@@ -138,7 +138,7 @@ namespace FinanceAPIMongoDataService
 				var collection = db.GetCollection<T>(table);
 				var filter = Builders<T>.Filter.Eq(idField, id);
 				if (customFilter != null)
-					filter = filter & customFilter;
+					filter &= customFilter;
 				var result = collection.DeleteOne(filter);
 				return result.DeletedCount > 0;
 			}

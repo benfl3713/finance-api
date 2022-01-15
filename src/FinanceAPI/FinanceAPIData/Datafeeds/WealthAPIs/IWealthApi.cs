@@ -5,5 +5,5 @@ using FinanceAPICore.Wealth;
 public interface IWealthApi
 {
     Task<List<Asset>> GetAssets(string clientId);
-    Task GetTradesByAsset(string clientId, string assetId);
+    Task<List<Trade>> GetTradesByAsset(string clientId, string assetId);
 } 

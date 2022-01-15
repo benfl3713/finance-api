@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using FinanceAPICore;
 using FinanceAPICore.DataService;
 using FinanceAPICore.Tasks;
+using FinanceAPICore.Wealth;
 using FinanceAPIData.Datafeeds.WealthAPIs;
 using FinanceAPIData.Wealth;
 using Microsoft.Extensions.Options;
@@ -15,16 +15,18 @@ namespace FinanceAPIData.Tasks
         private readonly DatafeedProcessor _datafeedProcessor;
         private readonly IClientDataService _clientDataService;
         private readonly AssetRepository _assetRepository;
+        private readonly TradeRepository _tradeRepository;
         private readonly IDatafeedDataService _datafeedDataService;
         private readonly IOptions<AppSettings> _appSettings;
-        
-        public WealthRefreshTask(IOptions<TaskSettings> settings, IOptions<AppSettings> appSettings, DatafeedProcessor datafeedProcessor, IClientDataService clientDataService, AssetRepository assetRepository, IDatafeedDataService datafeedDataService) : base(settings)
+
+        public WealthRefreshTask(IOptions<TaskSettings> settings, IOptions<AppSettings> appSettings, DatafeedProcessor datafeedProcessor, IClientDataService clientDataService, AssetRepository assetRepository, IDatafeedDataService datafeedDataService, TradeRepository tradeRepository) : base(settings)
         {
             _datafeedProcessor = datafeedProcessor;
             _clientDataService = clientDataService;
             _assetRepository = assetRepository;
             _datafeedDataService = datafeedDataService;
             _appSettings = appSettings;
+            _tradeRepository = tradeRepository;
         }
 
         public override void Execute(Task task)
@@ -42,7 +44,13 @@ namespace FinanceAPIData.Tasks
                         continue;
 
                     var assets = api.GetAssets(client.ID).Result;
-                    assets.ForEach(a => _assetRepository.ImportAsset(a));
+
+                    foreach (Asset asset in assets)
+                    {
+                        _assetRepository.ImportAsset(asset);
+                        List<Trade> trades = api.GetTradesByAsset(client.ID, asset.Id).Result;
+                        trades.ForEach(t => _tradeRepository.ImportTrade(t));
+                    }
                 }
             }
         }
@@ -55,9 +63,9 @@ namespace FinanceAPIData.Tasks
             Type datafeedType = datafeedApis[datafeedId];
             if (datafeedType == null)
                 return null;
-            
-            //IOptions<AppSettings> appSettings, IDatafeedDataService datafeedDataService, AssetRepository assetRepository
-            return (IWealthApi)Activator.CreateInstance(datafeedType, _appSettings, _datafeedDataService, _assetRepository);
+
+            //IOptions<AppSettings> appSettings, IDatafeedDataService datafeedDataService, AssetRepository assetRepository, TradeRepository tradeRepository
+            return (IWealthApi)Activator.CreateInstance(datafeedType, _appSettings, _datafeedDataService, _assetRepository, _tradeRepository);
         }
 
         private static Dictionary<string, Type> datafeedApis = new Dictionary<string, Type>
