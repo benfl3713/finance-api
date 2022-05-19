@@ -31,7 +31,7 @@ namespace FinanceAPI.Controllers
 			return _accountProcessor.GetAccounts(clientId);
 		}
 		
-		[HttpPost("{accountId}")]
+		[HttpPost]
 		public IActionResult InsertAccount([FromBody] JObject jsonAccount)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
