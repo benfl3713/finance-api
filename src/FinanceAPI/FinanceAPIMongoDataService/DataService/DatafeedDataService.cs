@@ -19,17 +19,18 @@ namespace FinanceAPIMongoDataService.DataService
 			_connectionString = appSettings.Value.MongoDB_ConnectionString;
 		}
 
-		public bool AddAccountDatafeedMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID)
+		public bool AddAccountDatafeedMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID, Dictionary<string, string> extraDetails)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
-			var record = new
+			var record = new DatafeedExternalAccount
 			{
 				_id = $"{accountID}_{externalAccountID}",
 				accountId = accountID,
 				externalId = externalAccountID,
-				datafeed,
-				vendorID,
-				clientId
+				datafeed = datafeed,
+				vendorID = vendorID,
+				clientId = clientId,
+				extraDetails = extraDetails
 			};
 			return database.InsertRecord(externalAccountMappingsTable, record);
 		}
@@ -80,14 +81,18 @@ namespace FinanceAPIMongoDataService.DataService
 		public List<ExternalAccount> GetExternalAccounts(string clientId, string accountId = null)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
-			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId);
+			var filter = Builders<DatafeedExternalAccount>.Filter.Eq("clientId", clientId);
 			if(!string.IsNullOrEmpty(accountId))
-				filter &= Builders<dynamic>.Filter.Eq("accountId", accountId);
+				filter &= Builders<DatafeedExternalAccount>.Filter.Eq("accountId", accountId);
 
-			List<dynamic> result = database.LoadRecordsByFilter(externalAccountMappingsTable, filter);
+			List<DatafeedExternalAccount> result = database.LoadRecordsByFilter(externalAccountMappingsTable, filter);
 			List<ExternalAccount> externalAccounts = new List<ExternalAccount>();
 
-			result.ForEach(r => externalAccounts.Add(new ExternalAccount(r.externalId, r.externalId, r.vendorID, "", r.datafeed, true, r.accountId)));
+			result.ForEach(r =>
+			{
+				var ea = new ExternalAccount(r.externalId, r.externalId, r.vendorID, "", r.datafeed, true, r.accountId) { ExtraDetails = r.extraDetails };
+				externalAccounts.Add(ea);
+			});
 			return externalAccounts;
 		}
 
@@ -150,6 +155,17 @@ namespace FinanceAPIMongoDataService.DataService
 			var filter = Builders<dynamic>.Filter.Eq("clientId", clientId) & Builders<dynamic>.Filter.Eq("accountId", accountID);
 
 			return database.DeleteManyRecords(externalAccountMappingsTable, filter);
+		}
+
+		private class DatafeedExternalAccount
+		{
+			public string _id;
+			public string accountId;
+			public string externalId;
+			public string datafeed;
+			public string vendorID;
+			public string clientId;
+			public Dictionary<string, string> extraDetails;
 		}
 	}
 }

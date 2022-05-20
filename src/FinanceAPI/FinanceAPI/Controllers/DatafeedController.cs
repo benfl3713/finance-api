@@ -86,8 +86,9 @@ namespace FinanceAPI.Controllers
 			var vendorID = jExternalAccount["vendorID"].ToString();
 			var accountID = jExternalAccount["accountID"].ToString();
 			var externalAccountID = jExternalAccount["externalAccountID"].ToString();
+			var extraDetails = jExternalAccount["extraDetails"]?.ToObject<Dictionary<string, string>>();
 
-			return _datafeedProcessor.AddExternalAccountMapping(clientId, datafeed, vendorID, accountID, externalAccountID) 
+			return _datafeedProcessor.AddExternalAccountMapping(clientId, datafeed, vendorID, accountID, externalAccountID, extraDetails) 
 				? Json(null) as IActionResult 
 				: BadRequest();
 		}

@@ -58,7 +58,7 @@ namespace FinanceAPIData.Tasks
             AccountSettings accountSettings = _accountDataService.GetAccountSettings(accountID);
 
             decimal? totalAccountBalance = null;
-            decimal totalAvailableAccountBalance = 0;
+            decimal? totalAvailableAccountBalance = 0;
             int transactionsImportedCount = 0;
 
             foreach (var externalAccount in externalAccounts)
@@ -75,7 +75,7 @@ namespace FinanceAPIData.Tasks
             account = _accountDataService.GetAccountById(accountID, Task.ClientID);
 
             if(accountSettings != null && accountSettings.GenerateAdjustments && totalAccountBalance.HasValue)
-                BalanceAccount(account, ref totalAccountBalance);
+                BalanceAccount(account, ref totalAccountBalance, ref totalAvailableAccountBalance);
             
             // Enqueue task to calculate logos on new transactions
             Task logoTask = new Task($"Logo Calculator [{account.AccountName}]", Task.ClientID, TaskType.LogoCalculator, DateTime.Now);
@@ -110,7 +110,7 @@ namespace FinanceAPIData.Tasks
                 return 0;
             }
 
-            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount.AccountID, encryptedAccessKey, out decimal? accountBalance, out availableBalance);
+            List<Transaction> transactions = datafeedApi.GetAccountTransactions(externalAccount, encryptedAccessKey, out decimal? accountBalance, out availableBalance);
             Log($"Fetched [{transactions.Count}] transactions from provider");
 
             List<Transaction> sortedTransactions = new List<Transaction>();
@@ -146,19 +146,58 @@ namespace FinanceAPIData.Tasks
             return accountBalance;
         }
 
-        private void BalanceAccount(Account account, ref decimal? accountBalance)
+        private void BalanceAccount(Account account, ref decimal? accountBalance, ref decimal? accountAvailableBalance)
         {
 			if (accountBalance.HasValue && accountBalance != 0 && account.CurrentBalance.HasValue && account.CurrentBalance != accountBalance)
 			{
-				decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance.Value);
-                Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
-                transaction.ClientID = Task.ClientID;
-                transaction.Owner = nameof(AccountRefresh);
-				Log($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
-                _transactionDataService.InsertTransaction(transaction);
-                accountBalance += difference;
+                decimal difference = Math.Abs(account.CurrentBalance.Value - accountBalance.Value);
+                
+                if (FindInverseValueAdjustment(account.ClientID, account.ID, difference, false, out Transaction matchedAdjust))
+                {
+                    _transactionDataService.DeleteTransaction(matchedAdjust.ID, account.ClientID);
+                }
+                else
+                {
+                    Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.CurrentBalance > accountBalance ? -difference : difference, "Adjust", "Adjustment Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider");
+                    transaction.ClientID = Task.ClientID;
+                    transaction.Owner = nameof(AccountRefresh);
+                    Log($"Account [{account.AccountName}] is out of balance. Creating adjustment of amount [{transaction.Amount}]");
+                    _transactionDataService.InsertTransaction(transaction);
+                    accountBalance += difference;
+                }
+            }
+
+            if (accountAvailableBalance.HasValue && accountAvailableBalance != 0 && account.AvailableBalance.HasValue && account.AvailableBalance != accountAvailableBalance)
+            {
+                decimal difference = Math.Abs(account.AvailableBalance.Value - accountAvailableBalance.Value);
+
+                if (FindInverseValueAdjustment(account.ClientID, account.ID, difference, true, out Transaction matchedAdjust))
+                {
+                    _transactionDataService.DeleteTransaction(matchedAdjust.ID, account.ClientID);
+                }
+                else
+                {
+                    Transaction transaction = new Transaction(Guid.NewGuid().ToString(), DateTime.Now, account.ID, "Adjust", account.AvailableBalance > accountAvailableBalance ? -difference : difference, "Adjust", "Adjustment Pending Transaction", "Adjust", "This transaction is created from an account refresh to ensure that the account is balanced to the provider") { Status = Status.PENDING };
+                    transaction.ClientID = Task.ClientID;
+                    transaction.Owner = nameof(AccountRefresh);
+                    Log($"Account [{account.AccountName}] is out of balance (Pending). Creating Pending adjustment of amount [{transaction.Amount}]");
+                    _transactionDataService.InsertTransaction(transaction);
+                    accountAvailableBalance += difference;
+                }
             }
 		}
+
+        private bool FindInverseValueAdjustment(string clientId, string accountId, decimal value, bool pending, out Transaction transaction)
+        {
+            transaction =  _transactionDataService
+                .GetTransactions(clientId)
+                .Where(t => t.AccountID == accountId)
+                .Where(t => t.Vendor == "Adjust")
+                .Where(t => t.Status == (pending ? Status.PENDING : Status.SETTLED))
+                .FirstOrDefault(t => t.Amount == value * -1);
+
+            return transaction != null;
+        }
 
         private List<Transaction> MerchantAlgorithm(List<Transaction> transactions)
         {

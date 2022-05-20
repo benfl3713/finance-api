@@ -30,7 +30,7 @@ namespace FinanceAPIData
 			return datafeeds;
 		}
 
-		public bool AddExternalAccountMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID)
+		public bool AddExternalAccountMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID, Dictionary<string, string> extraDetails)
 		{
 			if (string.IsNullOrEmpty(datafeed) || string.IsNullOrEmpty(vendorID) || string.IsNullOrEmpty(accountID) || string.IsNullOrEmpty(externalAccountID))
 				return false;
@@ -38,7 +38,7 @@ namespace FinanceAPIData
 			if (account == null)
 				return false;
 
-			return _datafeedDataService.AddAccountDatafeedMapping(clientId, datafeed, vendorID, accountID, externalAccountID);
+			return _datafeedDataService.AddAccountDatafeedMapping(clientId, datafeed, vendorID, accountID, externalAccountID, extraDetails);
 		}
 
 		public bool RemoveExternalAccountMapping(string clientId, string accountID, string externalAccountId)

@@ -111,34 +111,42 @@ namespace FinanceAPIData.Datafeeds.APIs
         public List<ExternalAccount> GetExternalAccounts(string clientId, string encryptedAccessKey, string vendorID, string vendorName, string provider, bool refreshToken = true)
         {
             List<ExternalAccount> accounts = new List<ExternalAccount>();
+            string[] types = { "accounts", "cards" }; 
             try
             {
-                string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
-                var client = new RestClient($"{_ApiUrl}/data/v1/accounts");
-                var request = new RestRequest(Method.GET);
-                request.AddHeader("Authorization", $"Bearer {accesskey}");
-                IRestResponse response = client.Execute(request);
+                foreach (string type in types)
+                {
+                    string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
+                    var client = new RestClient($"{_ApiUrl}/data/v1/{type}");
+                    var request = new RestRequest(Method.GET);
+                    request.AddHeader("Authorization", $"Bearer {accesskey}");
+                    IRestResponse response = client.Execute(request);
 
-                if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
-                {
-                    return GetExternalAccounts(clientId, RefreshTokenExchange(encryptedAccessKey), vendorID, vendorName, provider, false);
-                }
-                else if (response.StatusCode != HttpStatusCode.OK)
-                    return accounts;
-                else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
-                    return accounts;
-                }
+                    if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
+                    {
+                        return GetExternalAccounts(clientId, RefreshTokenExchange(encryptedAccessKey), vendorID, vendorName, provider, false);
+                    }
+                    else if (response.StatusCode != HttpStatusCode.OK)
+                        return accounts;
+                    else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        MarkConnectionAsNeedingReconnecting(encryptedAccessKey);
+                        return accounts;
+                    }
 
-                dynamic objContent = JsonConvert.DeserializeObject(response.Content);
-                var jsonAccounts = objContent["results"];
-                foreach (var objAccount in jsonAccounts)
-                {
-                    string id = objAccount["account_id"];
-                    string name = objAccount["display_name"];
-                    ExternalAccount account = new ExternalAccount(id, name, vendorID, vendorName, provider, _datafeedDataService.IsExternalAccountMapped(clientId, id, vendorID, out string mappedAccount), mappedAccount);
-                    accounts.Add(account);
+                    dynamic objContent = JsonConvert.DeserializeObject(response.Content);
+                    var jsonAccounts = objContent["results"];
+                    foreach (var objAccount in jsonAccounts)
+                    {
+                        string id = objAccount["account_id"];
+                        string name = objAccount["display_name"];
+                        ExternalAccount account = new ExternalAccount(id, name, vendorID, vendorName, provider, _datafeedDataService.IsExternalAccountMapped(clientId, id, vendorID, out string mappedAccount), mappedAccount)
+                        {
+                            LogoUri = objAccount["provider"]?["logo_uri"]?.ToString(),
+                            ExtraDetails = new Dictionary<string, string>{{"ACCOUNT_TYPE", type}}
+                        };
+                        accounts.Add(account);
+                    }
                 }
             }
             catch (Exception e)
@@ -148,23 +156,28 @@ namespace FinanceAPIData.Datafeeds.APIs
             return accounts;
         }
 
-        public List<Transaction> GetAccountTransactions(string externalAccountID, string encryptedAccessKey, out decimal? accountBalance, out decimal availableBalance, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
+        public List<Transaction> GetAccountTransactions(ExternalAccount externalAccount, string encryptedAccessKey, out decimal? accountBalance, out decimal availableBalance, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
         {
             List<Transaction> transactions = new List<Transaction>();
-            accountBalance = GetAccountBalance(externalAccountID, ref encryptedAccessKey, out availableBalance);
+            string externalAccountID = externalAccount.AccountID;
+            string accountType = null;
+            if (!externalAccount.ExtraDetails?.TryGetValue("ACCOUNT_TYPE", out accountType) ?? false)
+                accountType = "accounts";
+            
+            accountBalance = GetAccountBalance(accountType, externalAccountID, ref encryptedAccessKey, out availableBalance);
             try
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
-                var client = new RestClient($"{_ApiUrl}/data/v1/accounts/{externalAccountID}/transactions");
+                var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/transactions");
                 var request = new RestRequest(Method.GET);
                 request.AddParameter("from", DateTime.MinValue.ToString("yyyy-MM-ddTH:mm:ss"));
-                request.AddParameter("to", DateTime.UtcNow.ToString("yyyy-MM-ddTH:mm:ss"));
+                request.AddParameter("to", DateTime.UtcNow.AddMinutes(-1).ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
                 if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
-                    return GetAccountTransactions(externalAccountID, RefreshTokenExchange(encryptedAccessKey), out accountBalance, out availableBalance, dateFrom = null, dateTo = null, false);
+                    return GetAccountTransactions(externalAccount, RefreshTokenExchange(encryptedAccessKey), out accountBalance, out availableBalance, dateFrom = null, dateTo = null, false);
                 }
                 else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -177,7 +190,7 @@ namespace FinanceAPIData.Datafeeds.APIs
 
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                 if (objContent["results"] != null)
-                    DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions);
+                    DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions, accountType == "cards");
                 
                 transactions.ForEach(t => t.Source = "TrueLayerAPI");
             }
@@ -186,27 +199,27 @@ namespace FinanceAPIData.Datafeeds.APIs
                 Console.WriteLine(e.Message);
             }
 
-            transactions.AddRange(GetAccountPendingTransactions(externalAccountID, encryptedAccessKey, dateFrom, dateTo));
+            transactions.AddRange(GetAccountPendingTransactions(accountType, externalAccountID, encryptedAccessKey, dateFrom, dateTo));
 
             return transactions;
         }
 
-        private List<Transaction> GetAccountPendingTransactions(string externalAccountID, string encryptedAccessKey, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
+        private List<Transaction> GetAccountPendingTransactions(string accountType, string externalAccountID, string encryptedAccessKey, DateTime? dateFrom = null, DateTime? dateTo = null, bool refreshToken = true)
         {
             List<Transaction> transactions = new List<Transaction>();
             try
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
-                var client = new RestClient($"{_ApiUrl}/data/v1/accounts/{externalAccountID}/transactions/pending");
+                var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/transactions/pending");
                 var request = new RestRequest(Method.GET);
                 request.AddParameter("from", DateTime.MinValue.ToString("yyyy-MM-ddTH:mm:ss"));
-                request.AddParameter("to", DateTime.UtcNow.ToString("yyyy-MM-ddTH:mm:ss"));
+                request.AddParameter("to", DateTime.UtcNow.AddMinutes(-1).ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
 
                 if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
-                    return GetAccountPendingTransactions(externalAccountID, RefreshTokenExchange(encryptedAccessKey), dateFrom = null, dateTo = null, false);
+                    return GetAccountPendingTransactions(accountType, externalAccountID, RefreshTokenExchange(encryptedAccessKey), dateFrom = null, dateTo = null, false);
                 }
                 else if (response.StatusCode != HttpStatusCode.OK)
                     return transactions;
@@ -219,7 +232,7 @@ namespace FinanceAPIData.Datafeeds.APIs
 
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                 if (objContent["results"] != null)
-                    DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions);
+                    DeserialiseTransactions(objContent["results"], externalAccountID, ref transactions, accountType == "cards");
 
                 foreach (Transaction transaction in transactions)
                 {
@@ -237,7 +250,7 @@ namespace FinanceAPIData.Datafeeds.APIs
             return transactions;
         }
 
-        private void DeserialiseTransactions(dynamic transactionsNode, string accountId, ref List<Transaction> transactions)
+        private void DeserialiseTransactions(dynamic transactionsNode, string accountId, ref List<Transaction> transactions, bool reverseAmountSign)
         {
             if (transactions == null)
                 transactions = new List<Transaction>();
@@ -259,6 +272,10 @@ namespace FinanceAPIData.Datafeeds.APIs
                         vendor = ((string)transaction.meta?.provider_merchant_name ?? "")?.ToTitleCase();
                     string merchant = ((string)transaction["description"])?.ToTitleCase();
                     string currency = transaction["currency"];
+
+                    if (reverseAmountSign)
+                        amount *= -1;
+                    
 					Transaction t = new Transaction(transactionID, date, accountId, category, amount, vendor, merchant, type);
 					t.Owner = nameof(TrueLayerAPI);
                     t.Currency = currency;
@@ -274,13 +291,13 @@ namespace FinanceAPIData.Datafeeds.APIs
             }
         }
 
-        private decimal? GetAccountBalance(string externalAccountID, ref string encryptedAccessKey, out decimal availableBalance, bool refreshToken = true)
+        private decimal? GetAccountBalance(string accountType, string externalAccountID, ref string encryptedAccessKey, out decimal availableBalance, bool refreshToken = true)
         {
             availableBalance = 0;
             try
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
-                var client = new RestClient($"{_ApiUrl}/data/v1/accounts/{externalAccountID}/balance");
+                var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/balance");
                 var request = new RestRequest(Method.GET);
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
                 IRestResponse response = client.Execute(request);
@@ -289,12 +306,19 @@ namespace FinanceAPIData.Datafeeds.APIs
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
                     decimal.TryParse((string)objContent.results[0].current, out decimal amount);
                     decimal.TryParse((string)objContent.results[0].available, out availableBalance);
+
+                    if (accountType == "cards")
+                    {
+                        amount *= -1;
+                        availableBalance *= -1;
+                    }
+                    
                     return amount;
                 }
                 else if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
                     encryptedAccessKey = RefreshTokenExchange(encryptedAccessKey);
-                    return GetAccountBalance(externalAccountID, ref encryptedAccessKey, out availableBalance, false);
+                    return GetAccountBalance(accountType, externalAccountID, ref encryptedAccessKey, out availableBalance, false);
                 }
                 else
                 {

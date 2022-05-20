@@ -41,7 +41,7 @@ namespace FinanceAPI
 					webBuilder.UseStartup<Startup>();
 				})
 				.ConfigureAppConfiguration(configurationBuilder => {
-					Console.WriteLine("Loading Config");
+					Console.WriteLine("Loading Config...");
 					if (System.IO.File.Exists("user.appsettings.json"))
 						configurationBuilder.AddJsonFile("user.appsettings.json");
 

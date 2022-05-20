@@ -11,7 +11,7 @@ namespace FinanceAPICore.DataService
 		public bool DeleteClientDatafeed(string clientId, string provider, string vendorID);
 		public bool UpdateAccessKey(string newAccessKey, string newRefreshToken, string oldAccessKey, DateTime lastUpdated);
 		public string GetRefreshTokenByAccessKey(string encryptedAccesskey);
-		public bool AddAccountDatafeedMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID);
+		public bool AddAccountDatafeedMapping(string clientId, string datafeed, string vendorID, string accountID, string externalAccountID, Dictionary<string, string> extraDetails);
 		public bool RemoveAccountDatafeedMapping(string clientId, string accountID, string externalAccountID);
 		public bool RemoveAllAccountDatafeedMappings(string clientId, string accountID);
 		public bool IsExternalAccountMapped(string clientId, string externalAccountID, string vendorID, out string mappedAccount);
