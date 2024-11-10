@@ -47,11 +47,11 @@ namespace FinanceAPIData.Datafeeds.APIs
         public bool RegisterNewClient(string publicToken, string clientId, string requestUrl, string existingIdToReplace = null)
         {
             var client = new RestClient($"{_AuthUrl}/connect/token");
-            var request = new RestRequest(Method.POST);
+            var request = new RestRequest(string.Empty, Method.Post);
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             request.AddParameter("undefined", $"grant_type=authorization_code&client_id={_ClientId}&client_secret={_Secret}&redirect_uri={requestUrl}&code={publicToken}", ParameterType.RequestBody);
 
-            IRestResponse response = client.Execute(request);
+            var response = client.Execute(request);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 dynamic objContent = JsonConvert.DeserializeObject(response.Content);
@@ -80,9 +80,9 @@ namespace FinanceAPIData.Datafeeds.APIs
             try
             {
                 var client = new RestClient($"{_ApiUrl}/data/v1/me");
-                var request = new RestRequest(Method.GET);
+                var request = new RestRequest();
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
@@ -118,9 +118,9 @@ namespace FinanceAPIData.Datafeeds.APIs
                 {
                     string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
                     var client = new RestClient($"{_ApiUrl}/data/v1/{type}");
-                    var request = new RestRequest(Method.GET);
+                    var request = new RestRequest();
                     request.AddHeader("Authorization", $"Bearer {accesskey}");
-                    IRestResponse response = client.Execute(request);
+                    var response = client.Execute(request);
 
                     if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                     {
@@ -169,11 +169,11 @@ namespace FinanceAPIData.Datafeeds.APIs
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
                 var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/transactions");
-                var request = new RestRequest(Method.GET);
+                var request = new RestRequest();
                 request.AddParameter("from", DateTime.MinValue.ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddParameter("to", DateTime.UtcNow.AddMinutes(-1).ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
 
                 if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
@@ -211,11 +211,11 @@ namespace FinanceAPIData.Datafeeds.APIs
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
                 var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/transactions/pending");
-                var request = new RestRequest(Method.GET);
+                var request = new RestRequest();
                 request.AddParameter("from", DateTime.MinValue.ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddParameter("to", DateTime.UtcNow.AddMinutes(-1).ToString("yyyy-MM-ddTH:mm:ss"));
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
 
                 if (response.Content.Length > 0 && response.StatusCode == HttpStatusCode.Unauthorized && refreshToken)
                 {
@@ -298,9 +298,9 @@ namespace FinanceAPIData.Datafeeds.APIs
             {
                 string accesskey = SecurityService.DecryptTripleDES(encryptedAccessKey);
                 var client = new RestClient($"{_ApiUrl}/data/v1/{accountType}/{externalAccountID}/balance");
-                var request = new RestRequest(Method.GET);
+                var request = new RestRequest();
                 request.AddHeader("Authorization", $"Bearer {accesskey}");
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);
@@ -351,11 +351,11 @@ namespace FinanceAPIData.Datafeeds.APIs
                 string refreshToken = SecurityService.DecryptTripleDES(encryptedRefreshToken);
 
                 var client = new RestClient($"{_AuthUrl}/connect/token");
-                var request = new RestRequest(Method.POST);
+                var request = new RestRequest(string.Empty, Method.Post);
                 request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
                 request.AddParameter("undefined", $"grant_type=refresh_token&client_id={_ClientId}&client_secret={_Secret}&refresh_token={refreshToken}", ParameterType.RequestBody);
 
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     dynamic objContent = JsonConvert.DeserializeObject(response.Content);

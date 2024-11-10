@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,11 +15,11 @@
 
   <ItemGroup>
     <PackageReference Include="Coinbase" Version="6.0.1" />
-    <PackageReference Include="Hangfire.Console" Version="1.4.2" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.13" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.8" />
-    <PackageReference Include="RestSharp" Version="106.11.4" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="Hangfire.Console" Version="1.4.3" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.15" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
+    <PackageReference Include="Serilog" Version="4.1.0" />
   </ItemGroup>
 
 </Project>
