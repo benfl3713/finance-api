@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FinanceAPICore.DataService
 {
@@ -10,7 +11,7 @@ namespace FinanceAPICore.DataService
 		bool UpdateTransactionLogo(string transactionId, string logo);
 		bool DeleteTransaction(string transactionId, string clientId);
 		bool DeleteAllAccountTransactions(string accountId, string clientId);
-		List<Transaction> GetTransactions(string clientId);
+		List<Transaction> GetTransactions(string clientId, DateTime? startDate = null, DateTime? endDate = null);
 		bool ImportDatafeedTransaction(Transaction transaction);
 	}
 }

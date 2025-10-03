@@ -17,7 +17,7 @@ namespace FinanceAPIDataTests
             Dictionary<string, string> transactionLogos = new Dictionary<string, string>();
             // Setup mocks
             Mock<ITransactionsDataService> mockITransactionsDataService = new Mock<ITransactionsDataService>();
-            mockITransactionsDataService.Setup(db => db.GetTransactions(It.IsAny<string>())).Returns(new List<Transaction>{originalTransaction});
+            mockITransactionsDataService.Setup(db => db.GetTransactions(It.IsAny<string>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>())).Returns(new List<Transaction>{originalTransaction});
             mockITransactionsDataService.Setup(db => db.UpdateTransactionLogo(It.IsAny<string>(), It.IsAny<string>())).Callback((string id, string logo) => transactionLogos.Add(id, logo)).Returns(true);
             mock._transactionsDataService = mockITransactionsDataService.Object;
             

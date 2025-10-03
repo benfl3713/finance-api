@@ -75,12 +75,12 @@ namespace FinanceAPIData
 			return false;
 		}
 
-		public List<Transaction> GetTransactions(string clientId, string accountId = null)
+		public List<Transaction> GetTransactions(string clientId, string accountId = null, DateTime? startDate = null, DateTime? endDate = null)
 		{
 			if (string.IsNullOrEmpty(clientId))
 				return null;
 
-			List<Transaction> transactions = _transactionDataService.GetTransactions(clientId);
+			List<Transaction> transactions = _transactionDataService.GetTransactions(clientId, startDate, endDate);
 			LoadTransactionAccountNames(transactions, clientId);
 
 			if (!string.IsNullOrEmpty(accountId))

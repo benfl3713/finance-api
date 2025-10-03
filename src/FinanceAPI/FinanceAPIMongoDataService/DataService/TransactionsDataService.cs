@@ -51,10 +51,17 @@ namespace FinanceAPIMongoDataService.DataService
 			return null;
 		}
 
-		public List<Transaction> GetTransactions(string clientId)
+		public List<Transaction> GetTransactions(string clientId, DateTime? startDate = null, DateTime? endDate = null)
 		{
 			MongoDatabase database = new MongoDatabase(databaseName, _connectionString);
 			var filter = Builders<Transaction>.Filter.Eq("ClientID", clientId);
+			
+			if (startDate.HasValue)
+				filter &= Builders<Transaction>.Filter.Gte(t => t.Date, startDate.Value);
+			
+			if (endDate.HasValue)
+				filter &= Builders<Transaction>.Filter.Lte(t => t.Date, endDate.Value);
+			
 			return database.LoadRecordsByFilter(tableName, filter).OrderByDescending(t => t.Date).ToList();
 		}
 
