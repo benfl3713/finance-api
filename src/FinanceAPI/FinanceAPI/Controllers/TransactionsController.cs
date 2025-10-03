@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using FinanceAPI.Attributes;
 using FinanceAPICore;
 using FinanceAPIData;
@@ -19,10 +20,10 @@ namespace FinanceAPI.Controllers
 		}
 
 		[HttpGet]
-		public IActionResult GetTransactions(string accountId = null)
+		public IActionResult GetTransactions(string accountId = null, DateTime? startDate = null, DateTime? endDate = null)
 		{
 			string clientId = Request.HttpContext.Items["ClientId"]?.ToString();
-			return Json(_transactionProcessor.GetTransactions(clientId, accountId));
+			return Json(_transactionProcessor.GetTransactions(clientId, accountId, startDate, endDate));
 		}
 		
 		[HttpPost]
